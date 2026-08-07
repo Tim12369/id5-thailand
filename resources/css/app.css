@@ -1,0 +1,308 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+/* Division page theme palettes live in app/Http/Controllers/Public/DivisionPageController.php
+   as plain PHP, not Blade -- scan app/ too so those utility classes get generated. */
+@source '../../app/**/*.php';
+
+@source inline("{bg,text,border,hover:bg,hover:border,hover:text,group-hover:bg,group-hover:text,from,to}-{blue,purple,teal,amber,green,orange,slate,red,pink,indigo,cyan}-{50,100,200,300,400,600,700,800,900}");
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* Brand palette — deep "state blue" with a warm gold accent for a trustworthy,
+       premium government identity that still passes WCAG AA contrast checks. */
+    --color-brand-50:  #eef4ff;
+    --color-brand-100: #dce8ff;
+    --color-brand-200: #b6cffe;
+    --color-brand-300: #84aefb;
+    --color-brand-400: #5186f4;
+    --color-brand-500: #2f64e8;
+    --color-brand-600: #1f49c9;
+    --color-brand-700: #1c3a9e;
+    --color-brand-800: #182f78;
+    --color-brand-900: #0f1f4d;
+    --color-gold-50:  #fdf8ec;
+    --color-gold-100: #faedc9;
+    --color-gold-300: #eecb73;
+    --color-gold-500: #d9a437;
+    --color-gold-600: #b9842a;
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   Design-system component layer
+   Shared, semantic classes so every page composes the same primitives
+   instead of re-deriving spacing / color combinations ad‑hoc.
+   ────────────────────────────────────────────────────────────────── */
+@layer components {
+
+    /* Focus ring — consistent, high-contrast keyboard focus indicator (WCAG 2.4.7).
+       Defined as a literal utility list (not @apply'd as a component class) because
+       Tailwind v4's @apply only resolves real utilities, not @layer components classes. */
+    .focus-ring {
+        @apply outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-white rounded-lg;
+    }
+
+    /* Primary navigation links (desktop) */
+    .nav-link {
+        @apply outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-white
+               relative flex items-center gap-1 px-3.5 py-2 rounded-lg text-sm font-medium text-slate-600 whitespace-nowrap
+               transition-colors duration-150 hover:text-blue-700 hover:bg-blue-50/70;
+    }
+    .nav-link-active {
+        @apply text-blue-700 bg-blue-50;
+    }
+    .nav-link-active::after {
+        content: '';
+        @apply absolute left-3.5 right-3.5 -bottom-px h-0.5 rounded-full bg-blue-700;
+    }
+
+    /* Mobile navigation links */
+    .mobile-link {
+        @apply outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-white
+               flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium text-slate-700
+               transition-colors duration-150 hover:bg-blue-50 hover:text-blue-700;
+    }
+    .mobile-link-active {
+        @apply bg-blue-50 text-blue-700;
+    }
+
+    /* Buttons — single source of truth for call-to-action styling */
+    .btn {
+        @apply outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-white
+               inline-flex items-center justify-center gap-2 rounded-xl text-sm font-semibold
+               px-5 py-2.5 transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none;
+    }
+    .btn-lg { @apply text-base px-6 py-3.5 rounded-2xl; }
+    .btn-sm { @apply text-xs px-3.5 py-2 rounded-lg; }
+
+    .btn-primary, .btn-secondary, .btn-ghost-light, .btn-on-dark, .btn-danger, .btn-danger-ghost {
+        @apply outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-white
+               inline-flex items-center justify-center gap-2 rounded-xl text-sm font-semibold
+               px-5 py-2.5 transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none;
+    }
+    .btn-primary {
+        @apply bg-blue-700 text-white shadow-sm shadow-blue-900/10 hover:bg-blue-800 hover:shadow-md hover:shadow-blue-900/20;
+    }
+    .btn-secondary {
+        @apply bg-white text-blue-800 border border-slate-200 hover:border-blue-300 hover:bg-blue-50/60 shadow-sm;
+    }
+    .btn-ghost-light {
+        @apply bg-white/10 text-white border border-white/25 backdrop-blur-sm hover:bg-white/20 hover:border-white/40;
+    }
+    .btn-on-dark {
+        @apply bg-white text-blue-900 hover:bg-blue-50 shadow-lg shadow-blue-950/20;
+    }
+    .btn-danger {
+        @apply bg-red-600 text-white shadow-sm shadow-red-900/20 hover:bg-red-700;
+    }
+    .btn-danger-ghost {
+        @apply bg-red-50 text-red-700 border border-red-100 hover:bg-red-100;
+    }
+
+    /* Cards */
+    .card {
+        @apply bg-white rounded-2xl border border-slate-200/80 shadow-[0_1px_2px_rgba(15,23,42,0.04)];
+    }
+    .card-hover {
+        @apply transition-all duration-200 hover:border-blue-300/80 hover:shadow-[0_8px_24px_rgba(30,64,175,0.08)] hover:-translate-y-0.5;
+    }
+
+    /* Section heading kit — consistent rhythm across every homepage block */
+    .section-eyebrow {
+        @apply inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-blue-700;
+    }
+    .section-title {
+        @apply text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight;
+    }
+    .section-subtitle {
+        @apply text-slate-500 leading-relaxed mt-2 max-w-2xl;
+    }
+
+    /* Status / category badges */
+    .badge {
+        @apply inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full;
+    }
+    .badge-info, .badge-warning, .badge-danger, .badge-success, .badge-neutral {
+        @apply inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full border;
+    }
+    .badge-info    { @apply bg-blue-50 text-blue-700 border-blue-100; }
+    .badge-warning { @apply bg-amber-50 text-amber-700 border-amber-100; }
+    .badge-danger  { @apply bg-red-50 text-red-700 border-red-100; }
+    .badge-success { @apply bg-emerald-50 text-emerald-700 border-emerald-100; }
+    .badge-neutral { @apply bg-slate-100 text-slate-600 border-slate-200; }
+
+    /* Reusable icon tile — used across persona grids, service cards, contact tiles */
+    .icon-tile {
+        @apply flex items-center justify-center rounded-xl shrink-0 transition-colors duration-200;
+    }
+
+    /* Skip link & screen-reader helpers already covered by Tailwind's sr-only,
+       but we add a consistent "visually-hidden until focused" pattern for repeated use */
+    .skip-link {
+        @apply sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-100
+               focus:px-4 focus:py-2.5 focus:bg-blue-700 focus:text-white focus:rounded-xl focus:shadow-lg;
+    }
+}
+
+/* Subtle dotted background pattern for hero / dark sections */
+.pattern-dots {
+    background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.16) 1px, transparent 0);
+    background-size: 28px 28px;
+}
+
+/* Hero background photo layer — sits behind the gradient overlay.
+   If the image is missing, the section's gradient background still shows through. */
+.hero-photo {
+    @apply absolute inset-0 bg-cover bg-center;
+}
+
+/* Horizontal-scroll row on mobile, grid on larger screens —
+   used for the "Who Are You?" persona row and the Smart Guide 5W1H row */
+.scroll-row {
+    @apply flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 snap-x snap-mandatory
+           sm:mx-0 sm:px-0 sm:grid sm:gap-4 sm:overflow-visible sm:snap-none;
+}
+.scroll-row > * {
+    @apply snap-start;
+}
+
+/* Bottom CTA banner color variants */
+.cta-banner-primary { @apply bg-linear-to-br from-blue-700 to-blue-900 text-white; }
+.cta-banner-danger  { @apply bg-linear-to-br from-red-600 to-red-800 text-white; }
+.cta-banner-line    { @apply bg-linear-to-br from-emerald-500 to-emerald-700 text-white; }
+
+/* Smooth marquee-free fade-in for content that enters the viewport via Alpine x-intersect (progressive enhancement only) */
+[x-cloak] { display: none !important; }
+
+/* Office locator — list + map layout (/offices) */
+.office-map {
+    @apply h-80 lg:h-[calc(100vh-6rem)] lg:sticky lg:top-20 rounded-2xl overflow-hidden border border-slate-200 bg-slate-100;
+}
+.office-list {
+    @apply space-y-3 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-2;
+}
+.office-detail-map {
+    @apply h-64 sm:h-80 rounded-2xl overflow-hidden border border-slate-200 bg-slate-100;
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   Internal Portal (Module 3) — dark glassmorphism "digital workplace"
+   theme. Namespaced under .portal-* so it never collides with the
+   public site's light design system.
+   ────────────────────────────────────────────────────────────────── */
+.portal-shell {
+    @apply min-h-screen text-slate-100;
+    background-color: #0a1330;
+    background-image:
+        radial-gradient(circle at 1px 1px, rgba(255,255,255,0.06) 1px, transparent 0),
+        linear-gradient(160deg, var(--color-brand-900) 0%, #0a1330 60%, #060b1d 100%);
+    background-size: 28px 28px, auto, auto;
+}
+
+.portal-card {
+    @apply bg-white/5 border border-white/10 rounded-2xl backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.35)];
+}
+.portal-card-hover {
+    @apply transition-all duration-200 hover:border-gold-500/40 hover:shadow-[0_8px_32px_rgba(217,164,55,0.18)] hover:-translate-y-0.5;
+}
+
+.portal-topbar {
+    @apply sticky top-0 z-40 flex items-center justify-between gap-4 px-4 sm:px-6 py-3
+           bg-white/5 border-b border-white/10 backdrop-blur-md;
+}
+
+.portal-nav-link {
+    @apply flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-300
+           transition-colors duration-150 hover:bg-white/5 hover:text-white;
+}
+.portal-nav-link-active {
+    @apply bg-white/10 text-gold-500 shadow-[inset_0_0_0_1px_rgba(217,164,55,0.25)];
+}
+
+.portal-nav-sublink {
+    @apply block px-3 py-2 rounded-lg text-sm text-slate-400
+           transition-colors duration-150 hover:bg-white/5 hover:text-white;
+}
+.portal-nav-sublink-active {
+    @apply bg-white/5 text-gold-500;
+}
+
+.portal-mobile-link {
+    @apply flex flex-col items-center justify-center gap-1 py-2 text-[11px] font-medium text-slate-400
+           transition-colors duration-150 hover:text-white;
+}
+.portal-mobile-link-active {
+    @apply text-gold-500;
+}
+
+.portal-module-tile {
+    @apply bg-white/5 border border-white/10 rounded-2xl backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.35)]
+           transition-all duration-200 hover:border-gold-500/40 hover:shadow-[0_8px_32px_rgba(217,164,55,0.18)] hover:-translate-y-0.5
+           flex flex-col gap-3 p-5 sm:p-6;
+}
+.portal-tile-icon {
+    @apply flex items-center justify-center rounded-xl transition-colors duration-200
+           w-12 h-12 bg-white/10 text-gold-500;
+}
+
+/* Form controls on dark portal backgrounds */
+.portal-input {
+    @apply w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm text-slate-100
+           placeholder:text-slate-500 outline-none transition-colors duration-150
+           focus:border-gold-500/60 focus:bg-white/10;
+}
+.portal-label {
+    @apply block text-sm font-medium text-slate-300 mb-1.5;
+}
+.btn-portal-primary {
+    @apply outline-none focus-visible:ring-2 focus-visible:ring-gold-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a1330]
+           inline-flex items-center justify-center gap-2 rounded-xl text-sm font-semibold
+           px-5 py-2.5 transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none
+           bg-gold-500 text-brand-900 hover:bg-gold-600 shadow-sm shadow-black/20;
+}
+.btn-portal-secondary {
+    @apply outline-none focus-visible:ring-2 focus-visible:ring-gold-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a1330]
+           inline-flex items-center justify-center gap-2 rounded-xl text-sm font-medium
+           px-5 py-2.5 transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none
+           bg-white/5 text-slate-200 border border-white/10 hover:bg-white/10 hover:border-white/20;
+}
+
+/* ── Print: strip site chrome so a result page (e.g. the guided assessment
+      dashboard) prints as a clean document. `.no-print` hides page-specific
+      controls; everything else prints. ────────────────────────────────────── */
+@media print {
+    header,
+    footer,
+    #cookie-banner,
+    .ai-widget,
+    .skip-link,
+    .no-print {
+        display: none !important;
+    }
+
+    body {
+        background: #fff !important;
+    }
+
+    #main-content {
+        padding: 0 !important;
+    }
+}
+
+/* ── Respect reduced-motion preferences site-wide. The assessment wizard also
+      checks this in JS for its per-stage scroll. ─────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

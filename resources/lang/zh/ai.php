@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'title'              => 'AI移民助手',
+    'subtitle'           => '请提问移民相关问题',
+    'placeholder'        => '输入您的问题...',
+    'send'               => '发送',
+    'loading'            => '处理中...',
+    'persona_label'      => '您的身份',
+    'suggested'          => '常见问题',
+    'steps_label'        => '步骤',
+    'documents_label'    => '所需文件',
+    'forms_label'        => '相关表格',
+    'links_label'        => '相关链接',
+    'office_label'       => '办公室',
+    'disclaimer_label'   => '免责声明',
+    'close'              => '关闭',
+    'open_chat'          => '打开AI聊天',
+    'max_messages_reached' => '已达到对话上限，请开始新对话。',
+    'error_generic'      => '发生错误，请重试。',
+    'char_limit'         => '最多500个字符',
+    'new_conversation'   => '新对话',
+    'you'                => '您',
+    'assistant'          => 'AI助手',
+];

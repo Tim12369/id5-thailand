@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'title'              => 'AI Immigration Assistant',
+    'subtitle'           => 'Ask any immigration question',
+    'placeholder'        => 'Type your question...',
+    'send'               => 'Send',
+    'loading'            => 'Processing...',
+    'persona_label'      => 'Your Profile',
+    'suggested'          => 'Suggested Questions',
+    'steps_label'        => 'Steps',
+    'documents_label'    => 'Required Documents',
+    'forms_label'        => 'Relevant Forms',
+    'links_label'        => 'Useful Links',
+    'office_label'       => 'Office',
+    'disclaimer_label'   => 'Disclaimer',
+    'close'              => 'Close',
+    'open_chat'          => 'Open AI Chat',
+    'max_messages_reached' => 'Conversation limit reached. Please start a new conversation.',
+    'error_generic'      => 'An error occurred. Please try again.',
+    'char_limit'         => 'Maximum 500 characters',
+    'new_conversation'   => 'New Conversation',
+    'you'                => 'You',
+    'assistant'          => 'AI Assistant',
+];
