@@ -2,7 +2,7 @@
 
 namespace App\Support\Assessment;
 
-use Illuminate\Support\Facades\App;
+use App\Support\CmsText;
 
 /**
  * Immutable value object wrapping one question from config/assessment/questions.php.
@@ -36,12 +36,12 @@ class QuestionNode
 
     public function localizedTitle(): string
     {
-        return $this->localize($this->title);
+        return $this->localize('title', $this->title);
     }
 
     public function localizedHelp(): ?string
     {
-        return $this->help ? $this->localize($this->help) : null;
+        return $this->help ? $this->localize('help', $this->help) : null;
     }
 
     /**
@@ -83,7 +83,7 @@ class QuestionNode
 
         foreach ($this->options as $opt) {
             if (in_array($opt['value'], $values, true)) {
-                $labels[] = $this->localize($opt['label']);
+                $labels[] = $this->localize('option.'.$opt['value'], $opt['label']);
             }
         }
 
@@ -98,14 +98,16 @@ class QuestionNode
         return array_map(fn (array $opt) => [
             'value' => $opt['value'],
             'icon' => $opt['icon'] ?? 'ti-point',
-            'label' => $this->localize($opt['label']),
+            'label' => $this->localize('option.'.$opt['value'], $opt['label']),
         ], $this->options);
     }
 
-    private function localize(array $bag): string
+    /**
+     * The label in the visitor's language. Goes through CmsText so wording an
+     * editor changed in WordPress replaces the one written in the config file.
+     */
+    private function localize(string $part, array $bag): string
     {
-        $locale = App::getLocale();
-
-        return $bag[$locale] ?? $bag['en'] ?? $bag['th'] ?? (string) reset($bag);
+        return CmsText::localized("assessment_q.{$this->id}.{$part}", $bag);
     }
 }

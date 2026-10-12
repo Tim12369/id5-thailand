@@ -1,6 +1,8 @@
 @php
-    // Footer copyright/address text and any extra "Quick Links" are
-    // admin-editable via Internal Portal > Website Management > Footer.
+    // Footer copyright/address text comes from the WordPress Customizer
+    // ("ข้อมูลเว็บไซต์ > ส่วนท้ายเว็บไซต์") and any extra "Quick Links" from a
+    // WordPress menu assigned to the "เมนูด้านล่าง" location; both are synced
+    // into this application by App\Services\Cms\CmsSyncService.
     // The footer's four curated link columns below are left untouched --
     // they're a hand-tuned layout, not a flat list, so admin-added links
     // appear as an additional row instead of trying to slot into them.
@@ -8,6 +10,7 @@
     $footerAddress = \App\Models\Setting::get('site.footer_address');
     $customFooterItems = \App\Models\MenuItem::location(\App\Models\MenuItem::LOCATION_FOOTER)->visible()->get();
 @endphp
+@cmsEdit('setting:footer', 'ส่วนท้ายเว็บไซต์', 'ข้อความลิขสิทธิ์และที่อยู่')
 <footer class="bg-blue-950 text-blue-200 mt-20" role="contentinfo">
 
     {{-- Emergency strap — always reachable, even at the bottom of long pages --}}
@@ -17,8 +20,8 @@
                 <span class="icon-tile w-9 h-9 bg-red-500/15 text-red-300"><i class="ti ti-phone-call text-base"></i></span>
                 {{ __('layout.footer_emergency_lead') }}
             </p>
-            <a href="tel:1178" class="btn-danger btn-sm">
-                <i class="ti ti-phone"></i> {{ __('layout.hotline_strap') }} 1178
+            <a href="tel:{{ $hotline }}" class="btn-danger btn-sm">
+                <i class="ti ti-phone"></i> {{ __('layout.hotline_strap') }} {{ $hotline }}
             </a>
         </div>
     </div>
@@ -119,7 +122,7 @@
                 <ul class="space-y-3 text-sm text-blue-300">
                     <li class="flex items-start gap-2.5">
                         <i class="ti ti-phone mt-0.5 shrink-0 text-blue-400"></i>
-                        <span>{{ __('layout.hotline_strap') }} <strong class="text-white font-semibold">1178</strong></span>
+                        <span>{{ __('layout.hotline_strap') }} @cmsEdit('setting:identity', 'สายด่วน', 'หมายเลขสายด่วน')<strong class="text-white font-semibold">{{ $hotline }}</strong></span>
                     </li>
                     <li class="flex items-start gap-2.5">
                         <i class="ti ti-clock mt-0.5 shrink-0 text-blue-400"></i>
@@ -140,8 +143,8 @@
         @if ($customFooterItems->isNotEmpty())
             {{-- Quick Links — admin-added, appended below the curated columns above --}}
             <div class="border-t border-white/10 mt-10 pt-6">
-                <h3 class="text-white font-semibold text-sm mb-3">Quick Links</h3>
-                <div class="flex flex-wrap gap-x-5 gap-y-2">
+                <h3 class="text-white font-semibold text-sm mb-3">{{ __('footer.custom_links_title') }}</h3>
+                @cmsEdit('menus', 'เมนูนำทาง', 'เมนูด้านล่าง')<div class="flex flex-wrap gap-x-5 gap-y-2">
                     @foreach ($customFooterItems as $item)
                         <a href="{{ str_starts_with($item->url, 'http') ? $item->url : url($item->url) }}"
                            class="focus-ring text-sm text-blue-300 hover:text-white transition-colors">

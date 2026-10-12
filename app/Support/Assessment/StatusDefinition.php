@@ -2,7 +2,7 @@
 
 namespace App\Support\Assessment;
 
-use Illuminate\Support\Facades\App;
+use App\Support\CmsText;
 
 /**
  * Immutable value object for one status from config/assessment/statuses.php,
@@ -58,9 +58,7 @@ class StatusDefinition
 
     public function localizedLabel(): string
     {
-        $locale = App::getLocale();
-
-        return $this->label[$locale] ?? $this->label['en'] ?? $this->label['th'] ?? $this->key;
+        return CmsText::localized('assessment_status.'.$this->key, $this->label ?: [$this->key]);
     }
 
     /**

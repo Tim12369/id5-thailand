@@ -48,4 +48,7 @@ return [
         'self_surrender'      => 'Self Surrender',
         'self_surrender_desc' => 'If you have overstayed, report to the nearest immigration office as soon as possible.',
     ],
+
+    // ── Wording moved out of the templates so it can be edited in WordPress ──
+    'pdf' => 'PDF',
 ];

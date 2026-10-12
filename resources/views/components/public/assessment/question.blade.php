@@ -20,7 +20,7 @@
                         aria-controls="q-{{ $node['id'] }}-explain"
                         class="focus-ring shrink-0 inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 px-2 py-1 rounded-lg hover:bg-blue-50">
                     <i class="ti ti-info-circle"></i>
-                    <span x-text="explaining ? '{{ __('assessment.explain_close') }}' : '{{ __('assessment.explain') }}'"></span>
+                    <span x-text="explaining ? @jsText(__('assessment.explain_close')) : @jsText(__('assessment.explain'))"></span>
                 </button>
             @endif
         </div>

@@ -32,4 +32,10 @@ return [
     'documents_checklist' => 'Required Documents Checklist',
     'steps_title'    => 'Step-by-Step Process',
     'locations_title' => 'Where to Complete This',
+
+    // ── Wording moved out of the templates so it can be edited in WordPress ──
+    'badge' => 'SW1H Smart Guide',
+    'deadline_24_hours' => '24 hours',
+    'every_n_days' => 'Every :count days',
+    'within_24_hours' => 'Within 24 hours',
 ];

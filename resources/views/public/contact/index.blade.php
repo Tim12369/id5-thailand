@@ -5,7 +5,7 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
     <div class="mb-8">
-        <nav class="text-xs text-slate-500 mb-2" aria-label="breadcrumb">
+        <nav class="text-xs text-slate-500 mb-2" aria-label="{{ __('layout.breadcrumb') }}">
             <a href="{{ route('public.home') }}" class="hover:text-blue-700">{{ __('nav.home') }}</a>
             <span class="mx-1.5">/</span>
             <span>{{ __('nav.contact') }}</span>
@@ -16,7 +16,7 @@
 
     {{-- Province filter --}}
     <form method="GET" action="{{ route('public.contact') }}" class="mb-6">
-        <div class="flex flex-wrap items-center gap-2">
+        @cmsEdit('terms:id5_province', 'จังหวัด', 'รายชื่อจังหวัดของสำนักงาน')<div class="flex flex-wrap items-center gap-2">
             <a href="{{ route('public.contact') }}"
                class="px-4 py-2 text-sm rounded-xl font-medium border transition-colors
                       {{ !$province ? 'bg-blue-700 text-white border-blue-700' : 'bg-white text-slate-600 border-slate-200 hover:border-blue-300' }}">
@@ -37,6 +37,7 @@
         {{-- Station cards --}}
         <div class="lg:col-span-2 space-y-4">
             @forelse ($stations as $station)
+            @cmsEdit($station)
             <div class="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-sm transition-shadow">
                 <div class="flex items-start justify-between gap-4 mb-3">
                     <div>
@@ -108,9 +109,9 @@
                     <i class="ti ti-phone text-red-600"></i>
                     {{ __('contact.emergency_line') }}
                 </h3>
-                <p class="text-3xl font-bold text-red-700 mb-1">1178</p>
+                @cmsEdit('setting:identity', 'สายด่วน', 'หมายเลขสายด่วน')<p class="text-3xl font-bold text-red-700 mb-1">{{ $hotline }}</p>
                 <p class="text-xs text-red-700">{{ __('contact.available_247') }}</p>
-                <a href="tel:1178"
+                <a href="tel:{{ $hotline }}"
                    class="mt-3 block text-center bg-red-600 hover:bg-red-700 text-white
                           text-sm font-medium py-2.5 rounded-xl transition-colors">
                     {{ __('contact.call_now') }}
@@ -126,7 +127,7 @@
                 <ul class="text-sm space-y-1.5 text-slate-600">
                     <li class="flex justify-between">
                         <span>{{ __('contact.weekdays') }}</span>
-                        <span class="font-medium">08:30 – 16:30</span>
+                        <span class="font-medium">{{ __('contact.weekday_hours') }}</span>
                     </li>
                     <li class="flex justify-between text-slate-400">
                         <span>{{ __('contact.weekend') }}</span>

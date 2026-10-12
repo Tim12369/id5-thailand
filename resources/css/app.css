@@ -141,6 +141,39 @@
         @apply flex items-center justify-center rounded-xl shrink-0 transition-colors duration-200;
     }
 
+    /* Rich text written in the editor — article bodies, announcements, alerts,
+       FAQ answers. Without this, Tailwind's reset shows headings, lists and
+       pictures placed in the text as one unbroken block of plain text. */
+    .prose { @apply leading-relaxed text-slate-700 text-base; }
+    .prose-sm { @apply text-sm; }
+    .prose > :first-child { margin-top: 0; }
+    .prose > :last-child { margin-bottom: 0; }
+    .prose p, .prose ul, .prose ol, .prose blockquote, .prose table, .prose figure { margin: 0 0 1em; }
+    .prose h2 { @apply text-xl font-bold text-slate-800 leading-snug; margin: 1.5em 0 0.6em; }
+    .prose h3 { @apply text-lg font-bold text-slate-800 leading-snug; margin: 1.4em 0 0.5em; }
+    .prose h4, .prose h5, .prose h6 { @apply font-semibold text-slate-800; margin: 1.2em 0 0.4em; }
+    .prose ul { list-style: disc; padding-left: 1.5em; }
+    .prose ol { list-style: decimal; padding-left: 1.5em; }
+    .prose li { margin: 0.25em 0; }
+    .prose a { @apply text-blue-700 hover:underline; overflow-wrap: anywhere; }
+    .prose strong, .prose b { @apply font-semibold text-slate-800; }
+    .prose blockquote { @apply border-l-4 border-blue-200 pl-4 text-slate-600 italic; }
+    .prose hr { @apply border-slate-200; margin: 1.5em 0; }
+    .prose table { @apply w-full text-left border-collapse; }
+    .prose th, .prose td { @apply border border-slate-200 px-3 py-2 align-top; }
+    .prose th { @apply bg-slate-50 font-semibold text-slate-800; }
+
+    /* Pictures placed in the text, and the positions the editor can choose */
+    .prose img { @apply max-w-full h-auto rounded-xl shadow-sm; margin: 0 0 1em; }
+    .prose a > img { display: inline-block; }
+    .prose figure { max-width: 100%; }
+    .prose figure img { margin-bottom: 0.4em; }
+    .prose figcaption, .prose .wp-caption-text { @apply text-xs text-slate-500 text-center; margin: 0; }
+    .prose img.aligncenter, .prose figure.aligncenter { margin-left: auto; margin-right: auto; }
+    .prose img.alignleft, .prose figure.alignleft { float: left; max-width: 50%; margin: 0.25em 1.25em 0.75em 0; }
+    .prose img.alignright, .prose figure.alignright { float: right; max-width: 50%; margin: 0.25em 0 0.75em 1.25em; }
+    .prose::after { content: ''; display: table; clear: both; }
+
     /* Skip link & screen-reader helpers already covered by Tailwind's sr-only,
        but we add a consistent "visually-hidden until focused" pattern for repeated use */
     .skip-link {

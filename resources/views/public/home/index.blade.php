@@ -1,28 +1,30 @@
 @extends('public.layouts.app')
 
 @section('title', __('home.title'))
-@section('meta_description', __('home.hero_subtitle'))
+@section('meta_description', __('home.meta_description'))
 
 @section('content')
 
 {{-- ══════════════════════════════════════════════════════════════
      Hero — photo banner + identity panel
-     Image is admin-editable via Internal Portal → Site Settings
-     (falls back to the bundled default photo if unset).
+     Image is admin-editable in the WordPress Customizer
+     (ข้อมูลเว็บไซต์ > หน้าแรก), synced into the `settings` table by
+     App\Services\Cms (falls back to the bundled default photo if unset).
      ══════════════════════════════════════════════════════════════ --}}
 @php
     $heroImagePath = \App\Models\Setting::get('site.hero_image');
     $heroImageUrl = $heroImagePath ? asset('storage/' . $heroImagePath) : asset('images/hero-temple.jpg');
 
-    // Hero text is admin-editable via Internal Portal > Website Management >
-    // Homepage (App\Http\Controllers\Internal\Website\HomepageController),
-    // stored per-locale as Setting keys, falling back to the lang file
-    // defaults when unset -- same fallback pattern as the hero image above.
+    // Hero text is admin-editable in the WordPress Customizer
+    // (ข้อมูลเว็บไซต์ > หน้าแรก) and synced into Setting keys per
+    // locale, falling back to the lang file defaults when unset -- same
+    // fallback pattern as the hero image above.
     $localeSuffix = app()->getLocale() === 'en' ? 'en' : 'th';
     $heroTitle = \App\Models\Setting::get("home.hero_title_{$localeSuffix}") ?: __('home.hero_title');
     $heroSubtitle = \App\Models\Setting::get("home.hero_subtitle_{$localeSuffix}") ?: __('home.hero_subtitle');
     $heroCta = \App\Models\Setting::get("home.hero_cta_{$localeSuffix}") ?: __('home.hero_cta');
 @endphp
+@cmsEdit('setting:hero', 'แบนเนอร์หน้าแรก', 'หัวข้อ คำอธิบาย ปุ่ม และรูปพื้นหลัง')
 <section class="relative bg-linear-to-br from-blue-950 via-blue-900 to-blue-800 text-white overflow-hidden">
     <div class="hero-photo" style="background-image: url('{{ $heroImageUrl }}')"></div>
     <div class="absolute inset-0 bg-linear-to-r from-blue-950/90 via-blue-950/55 to-blue-900/15"></div>
@@ -88,7 +90,7 @@
         // database. "Who Are You?" and "Where Are You?" don't navigate
         // anywhere new -- see the note above -- everything else (photo,
         // title, description) is admin-editable for all 6 cards via
-        // Internal Portal > Website Management > Homepage Divisions.
+        // WordPress > การ์ดหน้าแรก (Homepage Cards).
         $divisionStyles = [
             'who_are_you'    => ['icon' => 'ti-users', 'gradient' => 'from-amber-500 to-amber-700', 'href' => route('public.assessment.start')],
             'where_are_you'  => ['icon' => 'ti-map-pin-search', 'gradient' => 'from-blue-700 to-blue-900', 'href' => route('public.offices.index')],
@@ -103,6 +105,7 @@
         @foreach (['who_are_you', 'where_are_you', 'technology', 'administration', 'foreigner', 'investigation'] as $key)
             @continue(!isset($divisionCards[$key]))
             @php $card = $divisionCards[$key]; $style = $divisionStyles[$key]; @endphp
+            @cmsEdit($card)
             <x-public.division-card :href="$style['href']" :icon="$style['icon']" :gradient="$style['gradient']" :photo="$card->photo_url"
                 :title="$card->getLocalizedTitle()" :desc="$card->getLocalizedDescription()" />
         @endforeach
@@ -116,15 +119,15 @@
     <div class="grid lg:grid-cols-3 gap-8">
         <x-public.news-column icon="ti-news" :title="__('home.latest_news')"
             :items="$content['latest_news']" :viewAllRoute="route('public.news.index')"
-            :emptyText="__('home.no_news')" />
+            :emptyText="__('home.no_news')" add="new:post" addLabel="เพิ่มข่าว" />
 
         <x-public.news-column icon="ti-speakerphone" :title="__('home.announcements')"
             :items="$content['announcements']" :viewAllRoute="route('public.announcements.index')"
-            :emptyText="__('home.no_announcements')" />
+            :emptyText="__('home.no_announcements')" add="new:id5_announcement" addLabel="เพิ่มประกาศ" />
 
         <x-public.news-column icon="ti-alert-triangle" :title="__('home.alerts')"
             :items="$content['alerts']" :viewAllRoute="route('public.alerts')"
-            :emptyText="__('home.no_announcements')" />
+            :emptyText="__('home.no_announcements')" add="new:id5_alert" addLabel="เพิ่มการแจ้งเตือน" />
     </div>
 </section>
 
@@ -163,7 +166,7 @@
 <section class="bg-white border-t border-slate-200">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-16">
         <div class="grid sm:grid-cols-3 gap-5">
-            <x-public.cta-banner-card href="tel:1178" icon="ti-phone" variant="danger"
+            <x-public.cta-banner-card :href="'tel:'.$hotline" icon="ti-phone" variant="danger"
                 :title="__('home.bottom_cta.emergency.title')" :desc="__('home.bottom_cta.emergency.desc')" :cta="__('home.bottom_cta.emergency.cta')" />
             <x-public.cta-banner-card :href="route('public.contact')" icon="ti-brand-line" variant="line"
                 :title="__('home.bottom_cta.line.title')" :desc="__('home.bottom_cta.line.desc')" :cta="__('home.bottom_cta.line.cta')" />

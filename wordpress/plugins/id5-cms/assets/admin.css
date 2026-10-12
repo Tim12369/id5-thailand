@@ -1,0 +1,179 @@
+/**
+ * Editor styling for ID5 CMS fields.
+ *
+ * Stays inside WordPress's own visual language (same greys, borders and button
+ * styles) so the screens feel like part of WordPress rather than a bolted-on
+ * custom dashboard.
+ */
+
+.id5-box-help,
+.id5-editor-notice {
+	margin: 0 0 12px;
+	color: #50575e;
+	font-size: 13px;
+}
+
+.id5-editor-notice {
+	margin: 8px 0 0;
+	font-style: italic;
+}
+
+.id5-fields {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 16px 20px;
+	padding: 4px 0;
+}
+
+.id5-field {
+	flex: 1 1 calc( 50% - 20px );
+	min-width: 260px;
+}
+
+.id5-field--wysiwyg,
+.id5-field--textarea,
+.id5-field--repeater {
+	flex-basis: 100%;
+}
+
+.id5-field__label {
+	display: block;
+	margin-bottom: 4px;
+	font-weight: 600;
+	color: #1d2327;
+}
+
+.id5-req {
+	color: #d63638;
+}
+
+.id5-field input[type="text"],
+.id5-field input[type="url"],
+.id5-field input[type="email"],
+.id5-field input[type="number"],
+.id5-field input[type="date"],
+.id5-field select,
+.id5-field textarea {
+	width: 100%;
+	max-width: 100%;
+}
+
+.id5-field__help {
+	margin: 4px 0 0;
+	color: #646970;
+	font-size: 12px;
+}
+
+.id5-checkbox {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+/* ── Media picker ──────────────────────────────────────────────────────── */
+
+.id5-media__preview {
+	margin-bottom: 8px;
+	min-height: 0;
+}
+
+.id5-media__preview img {
+	max-width: 150px;
+	height: auto;
+	border: 1px solid #dcdcde;
+	border-radius: 2px;
+	display: block;
+}
+
+.id5-media__filename {
+	display: inline-block;
+	padding: 4px 8px;
+	background: #f0f0f1;
+	border-radius: 2px;
+	font-family: Consolas, Monaco, monospace;
+	font-size: 12px;
+	word-break: break-all;
+}
+
+.id5-media__clear {
+	margin-left: 8px;
+	color: #b32d2e;
+}
+
+/* ── Repeater ──────────────────────────────────────────────────────────── */
+
+.id5-repeater {
+	width: 100%;
+}
+
+.id5-repeater__row {
+	margin-bottom: 10px;
+	border: 1px solid #dcdcde;
+	border-radius: 3px;
+	background: #fff;
+}
+
+.id5-repeater__head {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 12px;
+	background: #f6f7f7;
+	border-bottom: 1px solid #dcdcde;
+}
+
+.id5-repeater__head strong {
+	flex: 1;
+	color: #1d2327;
+}
+
+.id5-repeater__handle {
+	cursor: move;
+	color: #8c8f94;
+}
+
+.id5-repeater__remove {
+	color: #b32d2e;
+}
+
+.id5-repeater__body {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px 20px;
+	padding: 12px;
+}
+
+.id5-repeater__body .id5-field {
+	flex: 1 1 calc( 50% - 20px );
+	min-width: 220px;
+}
+
+.id5-repeater__rows .ui-sortable-placeholder {
+	visibility: visible !important;
+	height: 48px;
+	background: #f0f6fc;
+	border: 1px dashed #c3c4c7;
+	border-radius: 3px;
+}
+
+/* ── Taxonomy term screens ─────────────────────────────────────────────── */
+
+.id5-term-field .id5-field {
+	min-width: 0;
+	max-width: 480px;
+}
+
+.id5-term-field .id5-field__label {
+	font-weight: 600;
+}
+
+/* Colour picker field */
+input[type="color"].id5-color {
+	width: 72px;
+	height: 38px;
+	padding: 2px;
+	border: 1px solid #8c8f94;
+	border-radius: 4px;
+	background: #fff;
+	cursor: pointer;
+}

@@ -1,14 +1,14 @@
 @extends('public.layouts.app')
-@section('title', 'FAQ — ' . __('nav.faq'))
+@section('title', __('nav.faq_short') . ' — ' . __('nav.faq'))
 
 @section('content')
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
     <div class="mb-8">
-        <nav class="text-xs text-slate-500 mb-2" aria-label="breadcrumb">
+        <nav class="text-xs text-slate-500 mb-2" aria-label="{{ __('layout.breadcrumb') }}">
             <a href="{{ route('public.home') }}" class="hover:text-blue-700">{{ __('nav.home') }}</a>
             <span class="mx-1.5">/</span>
-            <span>FAQ</span>
+            <span>{{ __('nav.faq_short') }}</span>
         </nav>
         <h1 class="text-2xl font-bold text-slate-800 mb-1">{{ __('faq.title') }}</h1>
         <p class="text-slate-500 text-sm">{{ __('faq.subtitle') }}</p>
@@ -41,7 +41,7 @@
     {{-- FAQ grouped by category (Alpine.js accordions) --}}
     @forelse ($grouped as $category)
     <div class="mb-8">
-        <h2 class="flex items-center gap-2 text-base font-semibold text-slate-800 mb-3">
+        @cmsEdit($category)<h2 class="flex items-center gap-2 text-base font-semibold text-slate-800 mb-3">
             @if ($category->icon)
                 <i class="ti {{ $category->icon }} text-blue-600"></i>
             @endif
@@ -50,6 +50,7 @@
 
         <div class="space-y-2">
             @foreach ($category->faqs as $faq)
+            @cmsEdit($faq)
             <div x-data="{ open: false }"
                  class="bg-white rounded-2xl border border-slate-200 overflow-hidden
                         hover:border-blue-200 transition-colors">

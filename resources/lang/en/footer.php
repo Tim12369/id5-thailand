@@ -20,4 +20,7 @@ return [
     'accessibility_link'  => 'Accessibility Statement',
     'ita_link'            => 'Integrity & Transparency (ITA)',
     'opendata_link'       => 'Open Data',
+
+    // ── Wording moved out of the templates so it can be edited in WordPress ──
+    'custom_links_title' => 'Quick Links',
 ];

@@ -81,4 +81,7 @@ return [
         'line'      => ['title' => 'LINE Official Account', 'desc' => 'แชทกับเราทาง LINE เพื่อรับคำตอบและข่าวสารอย่างรวดเร็ว', 'cta' => 'เพิ่มเพื่อน'],
         'map'       => ['title' => 'ค้นหาสำนักงาน', 'desc' => 'ค้นหาสำนักงานตรวจคนเข้าเมืองที่ใกล้คุณและดูแผนที่เส้นทาง', 'cta' => 'ดูแผนที่'],
     ],
+
+    // ── Wording moved out of the templates so it can be edited in WordPress ──
+    'meta_description' => 'บริการสะดวก โปร่งใส มั่นใจ<br>ใส่ใจทุกความปลอดภัย เพื่อคนไทยและคนต่างด้าว',
 ];

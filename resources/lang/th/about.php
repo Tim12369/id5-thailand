@@ -22,4 +22,16 @@ return [
     'documents_desc'          => 'เอกสารและแบบฟอร์มทางการที่เกี่ยวข้องกับกองบังคับการตรวจคนเข้าเมือง 5',
     'documents_empty'         => 'ยังไม่มีเอกสารเผยแพร่',
     'documents_view_all'      => 'ดูแบบฟอร์มดาวน์โหลดทั้งหมด',
+
+    // ── Wording moved out of the templates so it can be edited in WordPress ──
+    'org_chart_subtitle' => 'โครงสร้างผู้บังคับบัญชา — Organization Chart',
+    'division5_provinces' => ['Chiang Mai', 'Chiang Rai', 'Lampang', 'Lamphun', 'Mae Hong Son', 'Nan', 'Phayao', 'Phrae', 'Tak', 'Kamphaeng Phet', 'Sukhothai', 'Uttaradit', 'Phitsanulok', 'Phichit', 'Phetchabun', 'Uthai Thani'],
+    'senior_command' => 'ผู้บังคับบัญชาระดับสูง',
+    'fiscal_year_be' => 'ประจำปีงบประมาณ พุทธศักราช',
+    'fiscal_year' => 'ประจำปีงบประมาณ',
+    'org_chart' => 'Organization Chart',
+    'command_chart' => 'ผังผู้บังคับบัญชา',
+    'no_section_data' => 'No organization data yet for this section.',
+    'no_chart_data' => 'Organization chart data has not been configured yet.',
+    'no_division_data' => 'No organization data yet for this division.',
 ];

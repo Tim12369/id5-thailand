@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\ItaIcon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\App;
@@ -10,7 +11,7 @@ class ItaCard extends Model
 {
     protected $fillable = [
         'section_id', 'card_number', 'title_th', 'title_en',
-        'content_th', 'content_en', 'icon', 'color',
+        'content_th', 'content_en', 'icon', 'icon_image', 'color',
         'sort_order', 'is_visible',
     ];
 
@@ -22,6 +23,21 @@ class ItaCard extends Model
     public function section(): BelongsTo
     {
         return $this->belongsTo(ItaSection::class, 'section_id');
+    }
+
+    /** The picture an editor uploaded for this topic, if any. */
+    public function getIconImageUrlAttribute(): ?string
+    {
+        return $this->icon_image ? asset('storage/'.$this->icon_image) : null;
+    }
+
+    /**
+     * The icon to draw when there is no picture: the one the editor named, or
+     * one chosen from what the topic is about (see App\Support\ItaIcon).
+     */
+    public function getDisplayIconAttribute(): string
+    {
+        return ItaIcon::normalise($this->icon) ?? ItaIcon::suggest($this->title_th, $this->title_en);
     }
 
     public function getLocalizedTitle(): string

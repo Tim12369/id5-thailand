@@ -4,7 +4,7 @@
 @section('content')
 <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-    <nav class="text-xs text-slate-500 flex items-center gap-1.5 mb-6" aria-label="Breadcrumb">
+    <nav class="text-xs text-slate-500 flex items-center gap-1.5 mb-6" aria-label="{{ ucfirst(__('layout.breadcrumb')) }}">
         <a href="{{ route('public.home') }}" class="focus-ring hover:text-blue-700">{{ __('nav.home') }}</a>
         <span>/</span>
         <span>{{ __("{$lang}.title") }}</span>
@@ -75,7 +75,7 @@
                         {{-- Tier label banner --}}
                         <div class="flex items-center gap-3 mb-4">
                             <div class="flex-1 h-px border-white/15 border-t"></div>
-                            <span class="bg-linear-to-r {{ $theme['tierBanner'] }} text-white text-xs sm:text-sm font-semibold px-4 py-1.5 rounded-full whitespace-nowrap shadow-md ring-1">
+                            @cmsEdit($tier->members->first(), 'ชื่อแถวในผัง', $tier->label_th)<span class="bg-linear-to-r {{ $theme['tierBanner'] }} text-white text-xs sm:text-sm font-semibold px-4 py-1.5 rounded-full whitespace-nowrap shadow-md ring-1">
                                 {{ $tier->label_th }}
                             </span>
                             <div class="flex-1 h-px border-white/15 border-t"></div>
@@ -84,6 +84,7 @@
                         {{-- Member grid: same photo + name-plate card as About Us, per-division palette --}}
                         <div class="flex flex-wrap justify-center gap-3.5 sm:gap-5">
                             @foreach ($tier->members as $member)
+                            @cmsEdit($member)
                             <div class="w-24 sm:w-28 group">
                                 <div class="rounded-xl p-[2.5px] bg-linear-to-b {{ $theme['cardOuter'] }} transition-transform duration-150 group-hover:-translate-y-0.5">
                                     <div class="rounded-[10px] overflow-hidden {{ $theme['cardInnerBg'] }}">
@@ -104,12 +105,12 @@
                                 </div>
                             </div>
                             @endforeach
-                        </div>
+                        @cmsAdd(\App\Support\CmsEdit::newPersonIn($section, $tier), 'เพิ่มบุคลากรในแถวนี้', $tier->label_th)</div>
                     </div>
                     @endforeach
                 </div>
             @else
-                <p class="text-center text-white/60 text-sm py-10">No organization data yet for this division.</p>
+                <p class="text-center text-white/60 text-sm py-10">{{ __('about.no_division_data') }}</p>
             @endif
         </div>
     </div>

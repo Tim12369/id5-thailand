@@ -15,10 +15,11 @@ use Illuminate\View\View;
  * logic of its own, so there's one controller and one view instead of four
  * near-identical copies.
  *
- * All 4 are backed by the same OrgChartSection/Tier/Member data (and the
- * same Internal Portal > Organization Chart admin screen) as the About Us
- * page's leadership charts -- they just render on their own page instead of
- * as an About Us tab (see show_on_about_page on OrgChartSection).
+ * All 4 are backed by the same OrgChartSection/Tier/Member data as the About
+ * Us page's leadership charts -- they just render on their own page instead
+ * of as an About Us tab (see show_on_about_page on OrgChartSection). That
+ * data is maintained in WordPress under บุคลากร (People) and synced in by
+ * App\Services\Cms.
  */
 class DivisionPageController extends Controller
 {

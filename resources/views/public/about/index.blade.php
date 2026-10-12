@@ -70,7 +70,7 @@
 
     <div class="text-center mb-8">
         <h1 class="text-2xl sm:text-3xl font-bold text-slate-800">{{ __('about.title') }}</h1>
-        <p class="text-slate-500 text-sm mt-1">โครงสร้างผู้บังคับบัญชา — Organization Chart</p>
+        <p class="text-slate-500 text-sm mt-1">{{ __('about.org_chart_subtitle') }}</p>
     </div>
 
     {{-- ── About ID5 & Immigration Division 5 ───────────────────────── --}}
@@ -93,7 +93,7 @@
             <p class="text-sm text-slate-600 leading-relaxed mb-4">{{ __('about.division5_desc') }}</p>
             <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">{{ __('about.division5_coverage') }}</p>
             <div class="flex flex-wrap gap-1.5">
-                @foreach (['Chiang Mai', 'Chiang Rai', 'Lampang', 'Lamphun', 'Mae Hong Son', 'Nan', 'Phayao', 'Phrae', 'Tak', 'Kamphaeng Phet', 'Sukhothai', 'Uttaradit', 'Phitsanulok', 'Phichit', 'Phetchabun', 'Uthai Thani'] as $province)
+                @foreach (__('about.division5_provinces') as $province)
                 <span class="badge badge-info">{{ $province }}</span>
                 @endforeach
             </div>
@@ -103,7 +103,7 @@
     {{-- ── Section Tabs ─────────────────────────────────────────────── --}}
     <div class="flex bg-slate-100 rounded-2xl p-1.5 mb-6 shadow-inner gap-1">
         @foreach ($sections as $section)
-        <button type="button" @click="activeSection = '{{ $section->slug }}'"
+        @cmsEdit($section)<button type="button" @click="activeSection = '{{ $section->slug }}'"
                 :class="activeSection === '{{ $section->slug }}'
                     ? 'bg-linear-to-r from-blue-700 via-blue-600 to-blue-700 text-white shadow-md'
                     : 'bg-transparent text-slate-500 hover:bg-white hover:text-slate-700'"
@@ -116,7 +116,7 @@
     {{-- ── Letterhead Chart Panels (one bespoke style per organization) ── --}}
     @foreach ($sections as $section)
     @php $s = $letterheads[$section->slug] ?? $defaultStyle; @endphp
-    <div x-show="activeSection === '{{ $section->slug }}'"
+    @cmsEdit($section)<div x-show="activeSection === '{{ $section->slug }}'"
          x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-[0.99]" x-transition:enter-end="opacity-100 scale-100">
         <div class="relative overflow-hidden rounded-3xl border-2 {{ $s['panel'] }} p-5 sm:p-9 shadow-2xl ring-1 ring-black/10">
 
@@ -157,11 +157,11 @@
                 <div class="text-center mb-9">
                     <div class="inline-flex items-center gap-3 bg-linear-to-r from-amber-600 via-yellow-300 to-amber-600 text-red-950 rounded-full px-6 sm:px-10 py-3 font-bold text-sm sm:text-lg shadow-[0_6px_20px_-4px_rgba(0,0,0,0.5)] border-2 border-amber-200 ring-2 ring-amber-100/40">
                         <span class="text-red-800 drop-shadow-sm">◆</span>
-                        <span class="drop-shadow-sm">ผู้บังคับบัญชาระดับสูง {{ $section->name_th }}</span>
+                        <span class="drop-shadow-sm">{{ __('about.senior_command') }} {{ $section->name_th }}</span>
                         <span class="text-red-800 drop-shadow-sm">◆</span>
                     </div>
                     <p class="{{ $s['yearText'] }} text-xs sm:text-sm mt-3.5 font-medium tracking-wide">
-                        ประจำปีงบประมาณ พุทธศักราช {{ $fiscalYearThai }}
+                        {{ __('about.fiscal_year_be') }} {{ $fiscalYearThai }}
                     </p>
                 </div>
             @elseif ($section->slug === 'immigration_bureau')
@@ -180,14 +180,14 @@
                         </div>
                         <div class="ml-auto relative">
                             <div class="bg-linear-to-br from-amber-500 via-yellow-400 to-amber-600 text-blue-950 text-[11px] sm:text-xs font-bold rounded-lg px-4 py-2 text-center shrink-0 shadow-[0_4px_12px_-2px_rgba(217,119,6,0.55)] ring-1 ring-amber-200">
-                                ประจำปีงบประมาณ<br><span class="text-sm sm:text-base">{{ $fiscalYearBe }}</span>
+                                {{ __('about.fiscal_year') }}<br><span class="text-sm sm:text-base">{{ $fiscalYearBe }}</span>
                             </div>
                         </div>
                     </div>
                     <div class="relative bg-linear-to-r from-blue-800 via-blue-600 to-blue-800 text-white text-center py-3.5 overflow-hidden">
                         <div class="absolute inset-0 bg-[radial-gradient(ellipse_60%_100%_at_50%_0%,rgba(251,191,36,0.25),transparent_70%)]"></div>
-                        <p class="relative font-bold text-sm sm:text-lg drop-shadow-sm">ผู้บังคับบัญชาระดับสูง</p>
-                        <p class="relative text-[11px] sm:text-xs uppercase tracking-[0.2em] opacity-90 mt-0.5">Organization Chart</p>
+                        <p class="relative font-bold text-sm sm:text-lg drop-shadow-sm">{{ __('about.senior_command') }}</p>
+                        <p class="relative text-[11px] sm:text-xs uppercase tracking-[0.2em] opacity-90 mt-0.5">{{ __('about.org_chart') }}</p>
                     </div>
                 </div>
             @else
@@ -205,7 +205,7 @@
                     </div>
                 </div>
                 <p class="text-center {{ $s['yearText'] }} text-xs sm:text-sm font-medium tracking-wide mb-9">
-                    ผังผู้บังคับบัญชา {{ $fiscalYearThai }}
+                    {{ __('about.command_chart') }} {{ $fiscalYearThai }}
                 </p>
             @endif
 
@@ -215,7 +215,7 @@
                     {{-- Tier label banner --}}
                     <div class="flex items-center gap-3 mb-4">
                         <div class="flex-1 h-px {{ $s['tierBorder'] }} border-t"></div>
-                        <span class="{{ $s['tierBanner'] }} text-xs sm:text-sm font-semibold px-4 py-1.5 rounded-full whitespace-nowrap shadow-md">
+                        @cmsEdit($tier->members->first(), 'ชื่อแถวในผัง', $tier->label_th)<span class="{{ $s['tierBanner'] }} text-xs sm:text-sm font-semibold px-4 py-1.5 rounded-full whitespace-nowrap shadow-md">
                             {{ $tier->label_th }}
                         </span>
                         <div class="flex-1 h-px {{ $s['tierBorder'] }} border-t"></div>
@@ -224,6 +224,7 @@
                     {{-- Member grid: each person is a self-contained letterhead "card" (photo + name ribbon) --}}
                     <div class="flex flex-wrap justify-center gap-3.5 sm:gap-5">
                         @foreach ($tier->members as $member)
+                        @cmsEdit($member)
                         <a href="https://division5.immigration.go.th/" target="_blank" rel="noopener"
                            class="focus-ring w-24 sm:w-28 group block">
                             <div class="rounded-xl p-[2.5px] {{ $s['cardOuter'] }} transition-transform duration-150 group-hover:-translate-y-0.5">
@@ -245,12 +246,12 @@
                             </div>
                         </a>
                         @endforeach
-                    </div>
+                    @cmsAdd(\App\Support\CmsEdit::newPersonIn($section, $tier), 'เพิ่มบุคลากรในแถวนี้', $tier->label_th)</div>
                 </div>
                 @endforeach
 
                 @if ($section->tiers->isEmpty())
-                <p class="text-center text-slate-400 text-sm py-10">No organization data yet for this section.</p>
+                <p class="text-center text-slate-400 text-sm py-10">{{ __('about.no_section_data') }}</p>
                 @endif
             </div>
             </div>
@@ -261,7 +262,7 @@
     @if ($sections->isEmpty())
     <div class="text-center py-16 text-slate-400">
         <i class="ti ti-sitemap text-4xl block mb-3 opacity-50"></i>
-        Organization chart data has not been configured yet.
+        {{ __('about.no_chart_data') }}
     </div>
     @endif
 
@@ -287,6 +288,7 @@
         @else
         <div class="grid sm:grid-cols-2 gap-3">
             @foreach ($documents as $document)
+            @cmsEdit($document)
             <div class="flex items-center gap-4 bg-white rounded-2xl border border-slate-200
                         hover:border-blue-300 hover:shadow-sm transition-all p-4 group">
                 <div class="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center shrink-0">

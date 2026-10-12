@@ -5,7 +5,7 @@
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
     <div class="mb-8">
-        <nav class="text-xs text-slate-500 mb-2" aria-label="breadcrumb">
+        <nav class="text-xs text-slate-500 mb-2" aria-label="{{ __('layout.breadcrumb') }}">
             <a href="{{ route('public.home') }}" class="hover:text-blue-700">{{ __('nav.home') }}</a>
             <span class="mx-1.5">/</span>
             <span>{{ __('announcements.title') }}</span>
@@ -15,6 +15,7 @@
 
     <div class="space-y-3">
         @forelse ($articles as $article)
+        @cmsEdit($article)
         <a href="{{ route('public.announcements.show', $article->slug) }}"
            class="flex items-start gap-4 p-4 bg-white rounded-2xl border border-slate-200
                   hover:border-blue-300 hover:shadow-sm transition-all group">
@@ -33,6 +34,10 @@
                 </p>
                 @endif
             </div>
+            @if ($article->thumbnail_url)
+            <img src="{{ $article->thumbnail_url }}" alt="" loading="lazy"
+                 class="shrink-0 w-20 h-16 rounded-xl object-cover bg-slate-100">
+            @endif
             <i class="ti ti-chevron-right text-slate-300 group-hover:text-blue-500
                       shrink-0 transition-colors mt-0.5"></i>
         </a>
@@ -42,7 +47,7 @@
             <p class="text-sm">{{ __('announcements.none') }}</p>
         </div>
         @endforelse
-    </div>
+    @cmsAdd('new:id5_announcement', 'เพิ่มประกาศ', null, true)</div>
 
     <div class="mt-6">{{ $articles->links() }}</div>
 </div>

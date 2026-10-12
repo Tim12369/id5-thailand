@@ -63,11 +63,11 @@
     @if ($results['faqs']->count())
     <section class="mb-8">
         <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">
-            FAQ ({{ $results['faqs']->count() }})
+            {{ __('nav.faq_short') }} ({{ $results['faqs']->count() }})
         </h2>
         <div class="space-y-2">
             @foreach ($results['faqs'] as $faq)
-            <a href="{{ route('public.faq') }}#faq-{{ $faq->id }}"
+            @cmsEdit($faq)<a href="{{ route('public.faq') }}#faq-{{ $faq->id }}"
                class="block p-4 bg-white rounded-xl border border-slate-200
                       hover:border-blue-300 hover:shadow-sm transition-all group">
                 <p class="text-sm font-medium text-slate-800 group-hover:text-blue-700 mb-1">
@@ -86,11 +86,11 @@
     @if ($results['guides']->count())
     <section>
         <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">
-            Smart Guide ({{ $results['guides']->count() }})
+            {{ __('nav.smart_guide_short') }} ({{ $results['guides']->count() }})
         </h2>
         <div class="space-y-2">
             @foreach ($results['guides'] as $guide)
-            <a href="{{ route('public.smart-guide.show', [$guide->persona, $guide->topic]) }}"
+            @cmsEdit($guide)<a href="{{ route('public.smart-guide.show', [$guide->persona, $guide->topic]) }}"
                class="block p-4 bg-white rounded-xl border border-slate-200
                       hover:border-blue-300 hover:shadow-sm transition-all group">
                 <div class="flex items-center gap-2 mb-1">

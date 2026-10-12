@@ -2,11 +2,12 @@
 @section('title', __('offices.title'))
 
 @section('content')
+@cmsEdit('list:id5_office', 'สำนักงาน', 'สำนักงานตรวจคนเข้าเมืองทั้งหมด')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10"
      x-data="officeLocator(@js($offices), @js($provinces), @js($regions))">
 
     <div class="mb-6">
-        <nav class="text-xs text-slate-500 mb-2" aria-label="breadcrumb">
+        <nav class="text-xs text-slate-500 mb-2" aria-label="{{ __('layout.breadcrumb') }}">
             <a href="{{ route('public.home') }}" class="hover:text-blue-700">{{ __('nav.home') }}</a>
             <span class="mx-1.5">/</span>
             <span>{{ __('offices.title') }}</span>
@@ -44,7 +45,7 @@
         <button type="button" @click="findNearMe()" :disabled="locating"
                 class="btn btn-primary shrink-0">
             <i class="ti ti-current-location text-base" :class="locating ? 'animate-spin' : ''"></i>
-            <span x-text="locating ? '{{ __('offices.locating') }}' : '{{ __('offices.near_me') }}'"></span>
+            <span x-text="locating ? @jsText(__('offices.locating')) : @jsText(__('offices.near_me'))"></span>
         </button>
     </div>
 
@@ -103,7 +104,7 @@
                                     </span>
                                 </template>
 
-                                <template x-if="office.distance_km !== undefined">
+                                <template x-if="office.distance_km != null">
                                     <span class="badge badge-success">
                                         <i class="ti ti-route text-sm"></i>
                                         <span x-text="office.distance_km.toFixed(1)"></span> {{ __('offices.distance_km') }}

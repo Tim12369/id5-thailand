@@ -13,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
         then: function (): void {
             Route::group([], __DIR__.'/../routes/line.php');
+            Route::group([], __DIR__.'/../routes/cms.php');
             Route::middleware(['web', 'set.locale'])->group(__DIR__.'/../routes/internal.php');
         },
     )
@@ -33,10 +34,16 @@ return Application::configure(basePath: dirname(__DIR__))
             'internal.auth' => \App\Http\Middleware\InternalAuthenticate::class,
             'internal.guest' => \App\Http\Middleware\InternalRedirectIfAuthenticated::class,
             'command-center.permission' => \App\Http\Middleware\EnsureCommandCenterPermission::class,
+            'cms.webhook' => \App\Http\Middleware\VerifyCmsWebhookSignature::class,
+            'cms.edit' => \App\Http\Middleware\CmsEditMode::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [
             'line/webhook',
+            // Server-to-server call from the WordPress editing install; it has
+            // no session to hold a token and is authenticated by an HMAC
+            // signature instead (see VerifyCmsWebhookSignature).
+            'cms/webhook',
         ]);
 
         // TEMPORARY DIAGNOSTIC — logs every inbound request that looks like a

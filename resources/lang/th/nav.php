@@ -21,4 +21,8 @@ return [
     'ecosystem'       => 'ระบบนิเวศน์',
     'service_center'  => 'คู่มือบริการ',
     'ita'             => 'ITA',
+
+    // ── Wording moved out of the templates so it can be edited in WordPress ──
+    'faq_short' => 'FAQ',
+    'smart_guide_short' => 'Smart Guide',
 ];

@@ -9,7 +9,7 @@
         <i class="ti ti-phone-call text-5xl mb-3 block"></i>
         <h1 class="text-3xl font-bold mb-2">{{ __('emergency.title') }}</h1>
         <p class="text-red-200 mb-4">{{ __('emergency.available_247') }}</p>
-        <a href="tel:{{ $emergencyPhone }}"
+        @cmsEdit('setting:identity', 'สายด่วน', 'หมายเลขสายด่วน')<a href="tel:{{ $emergencyPhone }}"
            class="inline-flex items-center gap-3 bg-white text-red-700 text-2xl font-bold
                   px-8 py-4 rounded-2xl hover:bg-red-50 transition-colors">
             <i class="ti ti-phone text-2xl"></i>
@@ -21,10 +21,10 @@
     <h2 class="text-lg font-semibold text-slate-800 mb-4">{{ __('emergency.important_contacts') }}</h2>
     <div class="grid sm:grid-cols-2 gap-4 mb-8">
         @foreach ([
-            ['number' => '1178', 'label' => __('emergency.immigration_hotline'), 'icon' => 'ti-id', 'color' => 'blue'],
-            ['number' => '191',  'label' => __('emergency.police'),               'icon' => 'ti-shield', 'color' => 'indigo'],
-            ['number' => '1669', 'label' => __('emergency.ambulance'),            'icon' => 'ti-heartbeat', 'color' => 'red'],
-            ['number' => '199',  'label' => __('emergency.fire'),                 'icon' => 'ti-flame', 'color' => 'orange'],
+            ['number' => $emergencyPhone, 'label' => __('emergency.immigration_hotline'), 'icon' => 'ti-id', 'color' => 'blue'],
+            ['number' => __('emergency.police_number'),  'label' => __('emergency.police'),               'icon' => 'ti-shield', 'color' => 'indigo'],
+            ['number' => __('emergency.ambulance_number'), 'label' => __('emergency.ambulance'),            'icon' => 'ti-heartbeat', 'color' => 'red'],
+            ['number' => __('emergency.fire_number'),  'label' => __('emergency.fire'),                 'icon' => 'ti-flame', 'color' => 'orange'],
         ] as $contact)
         <a href="tel:{{ $contact['number'] }}"
            class="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-200
@@ -46,7 +46,7 @@
     <h2 class="text-lg font-semibold text-slate-800 mb-4">{{ __('emergency.nearest_offices') }}</h2>
     <div class="space-y-3">
         @foreach ($stations->take(6) as $station)
-        <div class="flex items-center gap-4 p-4 bg-white rounded-xl border border-slate-200">
+        @cmsEdit($station)<div class="flex items-center gap-4 p-4 bg-white rounded-xl border border-slate-200">
             <i class="ti ti-building text-blue-500 text-xl shrink-0"></i>
             <div class="flex-1 min-w-0">
                 <p class="font-medium text-sm text-slate-800">{{ $station->getLocalizedName() }}</p>

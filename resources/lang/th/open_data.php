@@ -10,4 +10,10 @@ return [
         'stats'    => ['title' => 'สถิติรายเดือน',            'desc' => 'จำนวนผู้เดินทางเข้า-ออก (ข้อมูลรวม)'],
         'forms'    => ['title' => 'แบบฟอร์ม',                 'desc' => 'แบบฟอร์มการตรวจคนเข้าเมืองทั้งหมด'],
     ],
+
+    // ── Wording moved out of the templates so it can be edited in WordPress ──
+    'badge' => 'Open Government Data',
+    'format_json' => 'JSON',
+    'format_csv' => 'CSV',
+    'api_button' => 'REST API',
 ];

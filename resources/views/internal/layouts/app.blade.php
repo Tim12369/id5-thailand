@@ -56,6 +56,22 @@
                         </div>
                     @endif
                 @endforeach
+
+                {{-- Website content is edited in WordPress, not here. Linking
+                     straight to it means staff never have to remember a second
+                     address, and the sidebar still answers "where do I change
+                     the website?". Hidden entirely when no WordPress install is
+                     configured, so a half-set-up environment shows no dead link. --}}
+                @if ($websiteContent = \App\Support\PortalNav::websiteContentLink())
+                    <a href="{{ $websiteContent['url'] }}" target="_blank" rel="noopener"
+                       class="portal-nav-link justify-between">
+                        <span class="flex items-center gap-3">
+                            <i class="ti {{ $websiteContent['icon'] }} text-lg"></i>
+                            <span>{{ $websiteContent['label'] }}</span>
+                        </span>
+                        <i class="ti ti-external-link text-sm opacity-60"></i>
+                    </a>
+                @endif
             </nav>
 
             <div class="px-3 py-4 border-t border-white/10">

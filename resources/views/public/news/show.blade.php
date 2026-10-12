@@ -1,16 +1,17 @@
 @extends('public.layouts.app')
 @section('title', $article->getLocalizedTitle())
-@section('meta_description', $article->getLocalizedExcerpt())
+@if ($article->getLocalizedExcerpt()) @section('meta_description', $article->getLocalizedExcerpt()) @endif
 @if ($article->thumbnail_url) @section('og_image', $article->thumbnail_url) @endif
 
 @section('content')
+@cmsEdit($article)
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
     <div class="flex flex-col lg:flex-row gap-10">
 
         {{-- Article body --}}
         <article class="flex-1 min-w-0">
             {{-- Breadcrumb --}}
-            <nav class="text-xs text-slate-500 mb-4" aria-label="breadcrumb">
+            <nav class="text-xs text-slate-500 mb-4" aria-label="{{ __('layout.breadcrumb') }}">
                 <a href="{{ route('public.home') }}" class="hover:text-blue-700">{{ __('nav.home') }}</a>
                 <span class="mx-1.5">/</span>
                 <a href="{{ route('public.news.index') }}" class="hover:text-blue-700">{{ __('nav.news') }}</a>

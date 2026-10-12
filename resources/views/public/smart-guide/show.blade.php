@@ -5,10 +5,10 @@
 <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
     {{-- Breadcrumb --}}
-    <nav class="text-xs text-slate-500 mb-5" aria-label="breadcrumb">
+    <nav class="text-xs text-slate-500 mb-5" aria-label="{{ __('layout.breadcrumb') }}">
         <a href="{{ route('public.home') }}" class="hover:text-blue-700">{{ __('nav.home') }}</a>
         <span class="mx-1.5">/</span>
-        <a href="{{ route('public.smart-guide.index') }}" class="hover:text-blue-700">Smart Guide</a>
+        <a href="{{ route('public.smart-guide.index') }}" class="hover:text-blue-700">{{ __('nav.smart_guide_short') }}</a>
         <span class="mx-1.5">/</span>
         <span>{{ __("personas.{$persona}") }}</span>
     </nav>
@@ -35,14 +35,14 @@
         <i class="ti ti-alert-triangle text-red-600 text-xl shrink-0 mt-0.5"></i>
         <p class="text-sm text-red-800 font-medium">
             {{ __('smart_guide.deadline_warning') }}:
-            {{ $topicMeta->deadline_days === 1 ? ($isThai ? '24 ชั่วโมง' : '24 hours') : $topicMeta->deadline_days . ' ' . __('smart_guide.deadline_days_label') }}
+            {{ $topicMeta->deadline_days === 1 ? __('smart_guide.deadline_24_hours') : $topicMeta->deadline_days . ' ' . __('smart_guide.deadline_days_label') }}
         </p>
     </div>
     @elseif ($topicMeta?->deadline_days)
     <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 flex items-start gap-3">
         <i class="ti ti-clock text-amber-600 text-xl shrink-0 mt-0.5"></i>
         <p class="text-sm text-amber-800 font-medium">
-            {{ __('smart_guide.deadline_warning') }}: {{ $isThai ? 'ทุก ' . $topicMeta->deadline_days . ' วัน' : 'Every ' . $topicMeta->deadline_days . ' days' }}
+            {{ __('smart_guide.deadline_warning') }}: {{ __('smart_guide.every_n_days', ['count' => $topicMeta->deadline_days]) }}
         </p>
     </div>
     @endif
@@ -81,6 +81,7 @@
         {{-- Tab content panels --}}
         @foreach ($allDimensions as $dim)
         @if (isset($dimensions[$dim]))
+        @cmsEdit($dimensions[$dim])
         <div x-show="activeTab === '{{ $dim }}'"
              x-transition:enter="transition ease-out duration-150"
              x-transition:enter-start="opacity-0 translate-y-1"

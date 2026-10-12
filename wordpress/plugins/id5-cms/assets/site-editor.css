@@ -1,0 +1,596 @@
+/**
+ * The site editor screen.
+ *
+ * Laid out like the WordPress Customizer — a narrow panel on the left, the live
+ * website filling the rest — and borrowing its colours and proportions, so it
+ * reads as part of WordPress rather than as a separate tool.
+ */
+
+/* This screen takes over the whole window, as the Customizer does. */
+.toplevel_page_id5-site-editor #wpadminbar,
+.toplevel_page_id5-site-editor #adminmenumain,
+.toplevel_page_id5-site-editor #wpfooter {
+	display: none;
+}
+
+html.wp-toolbar:has( .id5-se ) {
+	padding-top: 0;
+}
+
+.id5-se {
+	position: fixed;
+	inset: 0;
+	z-index: 99990;
+	display: flex;
+	background: #dcdcde;
+	font-size: 13px;
+	color: #1d2327;
+}
+
+/* ── Panel ─────────────────────────────────────────────────────────────── */
+
+.id5-se__panel {
+	display: flex;
+	flex-direction: column;
+	flex: 0 0 320px;
+	max-width: 320px;
+	background: #f0f0f1;
+	border-right: 1px solid #c3c4c7;
+}
+
+.id5-se__head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	height: 46px;
+	border-bottom: 1px solid #c3c4c7;
+	background: #f0f0f1;
+}
+
+.id5-se__close {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 46px;
+	height: 46px;
+	border-right: 1px solid #c3c4c7;
+	color: #3c434a;
+	text-decoration: none;
+}
+
+.id5-se__close:hover {
+	background: #fff;
+	color: #2271b1;
+}
+
+.id5-se__state {
+	margin-right: 12px;
+	padding: 4px 12px;
+	border: 1px solid #c3c4c7;
+	border-radius: 3px;
+	background: #f6f7f7;
+	color: #50575e;
+	font-size: 12px;
+}
+
+.id5-se__state.is-busy {
+	border-color: #2271b1;
+	background: #2271b1;
+	color: #fff;
+}
+
+.id5-se__intro {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	padding: 14px 16px;
+	border-bottom: 1px solid #dcdcde;
+	background: #fff;
+}
+
+.id5-se__intro-label {
+	color: #50575e;
+	font-size: 12px;
+}
+
+.id5-se__intro-site {
+	font-size: 18px;
+	font-weight: 400;
+	line-height: 1.3;
+}
+
+.id5-se__intro-page {
+	margin-top: 4px;
+	color: #646970;
+	font-size: 12px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.id5-se__scroll {
+	flex: 1;
+	overflow-y: auto;
+}
+
+.id5-se__group {
+	margin-top: 14px;
+}
+
+.id5-se__group-title {
+	margin: 0;
+	padding: 0 16px 6px;
+	color: #50575e;
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	text-transform: none;
+}
+
+.id5-se__hint,
+.id5-se__empty {
+	margin: 0;
+	padding: 0 16px 8px;
+	color: #646970;
+	font-size: 12px;
+	line-height: 1.5;
+}
+
+/* Rows: one editable thing each, white on grey like Customizer sections. */
+
+.id5-se__kind > summary,
+.id5-se__section > summary {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 11px 12px 11px 14px;
+	border-top: 1px solid #dcdcde;
+	border-left: 4px solid #fff;
+	background: #fff;
+	font-weight: 600;
+	cursor: pointer;
+	list-style: none;
+}
+
+.id5-se__kind > summary::-webkit-details-marker,
+.id5-se__section > summary::-webkit-details-marker {
+	display: none;
+}
+
+.id5-se__kind:last-child > summary,
+.id5-se__section:last-of-type > summary,
+.id5-se__kind[open] > summary,
+.id5-se__section[open] > summary {
+	border-bottom: 1px solid #dcdcde;
+}
+
+.id5-se__kind > summary:hover,
+.id5-se__section > summary:hover {
+	border-left-color: #2271b1;
+	background: #f6f7f7;
+	color: #2271b1;
+}
+
+.id5-se__section[open] > summary .dashicons {
+	transform: rotate( 90deg );
+}
+
+.id5-se__count {
+	min-width: 20px;
+	padding: 0 6px;
+	border-radius: 10px;
+	background: #dcdcde;
+	color: #3c434a;
+	font-size: 11px;
+	font-weight: 400;
+	line-height: 20px;
+	text-align: center;
+}
+
+.id5-se__row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	width: 100%;
+	padding: 9px 12px 9px 22px;
+	border: 0;
+	border-bottom: 1px solid #f0f0f1;
+	border-left: 4px solid #fff;
+	background: #fff;
+	color: #1d2327;
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+}
+
+.id5-se__row > span:first-child {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.id5-se__row .dashicons {
+	flex: none;
+	color: #a7aaad;
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+}
+
+.id5-se__row:hover,
+.id5-se__row:focus {
+	border-left-color: #2271b1;
+	background: #f0f6fc;
+	color: #2271b1;
+	outline: none;
+}
+
+.id5-se__row:hover .dashicons {
+	color: #2271b1;
+}
+
+/* Settings forms */
+
+.id5-se__form {
+	padding: 12px 16px 4px;
+	border-bottom: 1px solid #dcdcde;
+	background: #f6f7f7;
+}
+
+.id5-se__form .id5-se__hint {
+	padding: 0 0 10px;
+}
+
+.id5-se__field {
+	display: block;
+	margin-bottom: 12px;
+}
+
+.id5-se__field > span:first-child {
+	display: block;
+	margin-bottom: 4px;
+	font-weight: 600;
+}
+
+.id5-se__field input[type="text"],
+.id5-se__field textarea {
+	width: 100%;
+}
+
+.id5-se__image img {
+	display: block;
+	width: 100%;
+	height: auto;
+	margin-bottom: 8px;
+	border: 1px solid #c3c4c7;
+	border-radius: 2px;
+}
+
+.id5-se__image-actions {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.id5-se__danger {
+	color: #b32d2e;
+}
+
+.id5-se__actions {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin: 4px 0 12px;
+}
+
+.id5-se__saved {
+	color: #00a32a;
+	font-weight: 600;
+}
+
+.id5-se__saved.is-error {
+	color: #b32d2e;
+}
+
+/* Content type links */
+
+.id5-se__links {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.id5-se__links li {
+	display: flex;
+	align-items: stretch;
+	margin: 0;
+	border-top: 1px solid #dcdcde;
+	background: #fff;
+}
+
+.id5-se__links:last-child li:last-child {
+	border-bottom: 1px solid #dcdcde;
+}
+
+.id5-se__links a {
+	display: flex;
+	flex: 1;
+	align-items: center;
+	gap: 8px;
+	padding: 10px 14px;
+	border-left: 4px solid #fff;
+	color: #1d2327;
+	text-decoration: none;
+}
+
+.id5-se__links a:hover {
+	border-left-color: #2271b1;
+	background: #f6f7f7;
+	color: #2271b1;
+}
+
+.id5-se__links .dashicons {
+	color: #8c8f94;
+}
+
+.id5-se__add {
+	flex: none;
+	width: 40px;
+	border: 0;
+	border-left: 1px solid #f0f0f1;
+	background: #fff;
+	color: #8c8f94;
+	cursor: pointer;
+}
+
+.id5-se__add:hover {
+	background: #2271b1;
+	color: #fff;
+}
+
+.id5-se__add:hover .dashicons {
+	color: #fff;
+}
+
+/* Footer */
+
+.id5-se__foot {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	height: 45px;
+	padding: 0 8px 0 12px;
+	border-top: 1px solid #c3c4c7;
+	background: #f0f0f1;
+}
+
+.id5-se__dash {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	color: #50575e;
+	text-decoration: none;
+}
+
+.id5-se__dash:hover {
+	color: #2271b1;
+}
+
+.id5-se__devices button {
+	width: 36px;
+	height: 44px;
+	border: 0;
+	border-bottom: 3px solid transparent;
+	background: none;
+	color: #646970;
+	cursor: pointer;
+}
+
+.id5-se__devices button:hover,
+.id5-se__devices button.is-active {
+	border-bottom-color: #2271b1;
+	color: #2271b1;
+}
+
+/* ── Stage: preview and overlay ────────────────────────────────────────── */
+
+.id5-se__stage {
+	position: relative;
+	display: flex;
+	flex: 1;
+	justify-content: center;
+	min-width: 0;
+	background: #646970;
+}
+
+.id5-se__preview {
+	width: 100%;
+	height: 100%;
+	border: 0;
+	background: #fff;
+	transition: max-width 0.2s ease;
+}
+
+.id5-se__stage[data-device="tablet"] .id5-se__preview {
+	max-width: 768px;
+	box-shadow: 0 0 0 1px rgba( 0, 0, 0, 0.2 ), 0 8px 30px rgba( 0, 0, 0, 0.25 );
+}
+
+.id5-se__stage[data-device="mobile"] .id5-se__preview {
+	max-width: 390px;
+	box-shadow: 0 0 0 1px rgba( 0, 0, 0, 0.2 ), 0 8px 30px rgba( 0, 0, 0, 0.25 );
+}
+
+.id5-se__overlay {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	background: #f0f0f1;
+	box-shadow: -4px 0 18px rgba( 0, 0, 0, 0.25 );
+}
+
+.id5-se__overlay[hidden] {
+	display: none;
+}
+
+.id5-se__overlay-bar {
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: 14px;
+	height: 46px;
+	padding: 0 14px;
+	border-bottom: 1px solid #c3c4c7;
+	background: #fff;
+}
+
+.id5-se__overlay-bar .button {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+}
+
+.id5-se__overlay-bar strong {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.id5-se__form-frame {
+	flex: 1;
+	width: 100%;
+	border: 0;
+	background: #f0f0f1;
+	transition: opacity 0.15s ease;
+}
+
+.id5-se__form-frame.is-loading {
+	opacity: 0.35;
+}
+
+@media ( max-width: 782px ) {
+	.id5-se__panel {
+		flex-basis: 260px;
+		max-width: 260px;
+	}
+}
+
+/* ── Wording panel: every fixed line of text on the previewed page ───────── */
+.id5-se__search {
+	width: 100%;
+	margin: 0 0 8px;
+}
+
+.id5-se__texts {
+	max-height: 46vh;
+	overflow-y: auto;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	background: #fff;
+}
+
+.id5-se__texts .id5-se__empty {
+	margin: 0;
+	padding: 12px;
+}
+
+.id5-se__text + .id5-se__text {
+	border-top: 1px solid #f0f0f1;
+}
+
+.id5-se__text-head {
+	display: block;
+	width: 100%;
+	padding: 8px 10px;
+	border: 0;
+	background: none;
+	text-align: left;
+	cursor: pointer;
+}
+
+.id5-se__text-head:hover,
+.id5-se__text.is-open > .id5-se__text-head {
+	background: #f0f6fc;
+}
+
+.id5-se__text-now {
+	display: block;
+	overflow: hidden;
+	color: #1d2327;
+	font-size: 13px;
+	line-height: 1.5;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.id5-se__text-group {
+	display: block;
+	color: #787c82;
+	font-size: 11px;
+}
+
+.id5-se__text.is-changed .id5-se__text-group {
+	color: #2271b1;
+}
+
+.id5-se__text-form {
+	padding: 4px 10px 12px;
+	background: #f6f7f7;
+}
+
+.id5-se__text-form textarea {
+	width: 100%;
+}
+
+.id5-se__text-original {
+	margin: 2px 0 8px;
+	color: #646970;
+	font-size: 11px;
+	line-height: 1.5;
+	overflow-wrap: anywhere;
+}
+
+.id5-se__status {
+	margin-left: 8px;
+	font-size: 12px;
+	color: #646970;
+}
+
+.id5-se__status.is-ok {
+	color: #008a20;
+}
+
+.id5-se__status.is-error {
+	display: block;
+	margin: 6px 0 0;
+	color: #b32d2e;
+}
+
+/* ── Delete the open item ─────────────────────────────────────────────────── */
+.id5-se__overlay-space {
+	flex: 1;
+}
+
+.id5-se__overlay-bar .button.id5-se__delete {
+	border-color: #d63638;
+	color: #b32d2e;
+	gap: 4px;
+}
+
+.id5-se__overlay-bar .button.id5-se__delete:hover,
+.id5-se__overlay-bar .button.id5-se__delete:focus {
+	border-color: #b32d2e;
+	background: #fcf0f1;
+	color: #8a2424;
+}
+
+.id5-se__delete-note {
+	overflow: hidden;
+	max-width: 46%;
+	color: #646970;
+	font-size: 12px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}

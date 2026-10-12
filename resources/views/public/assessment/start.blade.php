@@ -13,7 +13,7 @@
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
 
         {{-- Breadcrumb --}}
-        <nav class="text-xs text-slate-500 mb-6" aria-label="breadcrumb">
+        <nav class="text-xs text-slate-500 mb-6" aria-label="{{ __('layout.breadcrumb') }}">
             <a href="{{ route('public.home') }}" class="hover:text-blue-700">{{ __('nav.home') }}</a>
             <span class="mx-1.5">/</span>
             <span>{{ __('assessment.title') }}</span>
@@ -31,7 +31,7 @@
             <x-public.assessment.progress-steps :stage-count="$stageCount" />
         </div>
         <p class="sr-only" aria-live="polite"
-           x-text="'{{ __('assessment.stage_of', ['current' => '__C__', 'total' => '__T__']) }}'.replace('__C__', progressIndex + 1).replace('__T__', applicableStages.length)"></p>
+           x-text="@jsText(__('assessment.stage_of', ['current' => '__C__', 'total' => '__T__'])).replace('__C__', progressIndex + 1).replace('__T__', applicableStages.length)"></p>
 
         {{-- Visible "progress saved" indicator (auto-save is otherwise silent) --}}
         <div x-show="justSaved" x-transition.opacity x-cloak

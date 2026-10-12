@@ -11,6 +11,7 @@
 
     <div class="space-y-3">
         @forelse ($alerts as $alert)
+        @cmsEdit($alert)
         <div class="flex gap-4 p-4 rounded-2xl border
             @if ($alert->alert_level === 'danger') bg-red-50 border-red-200
             @elseif ($alert->alert_level === 'warning') bg-amber-50 border-amber-200
@@ -46,6 +47,17 @@
                     {{ $alert->getLocalizedExcerpt() }}
                 </p>
                 @endif
+
+                {{-- The full text and pictures, when the editor wrote more than the summary --}}
+                @if ($alert->thumbnail_url)
+                <img src="{{ $alert->thumbnail_url }}" alt="{{ $alert->getLocalizedTitle() }}" loading="lazy"
+                     class="mt-3 w-full h-auto rounded-xl">
+                @endif
+                @if ($alert->hasBodyBeyondExcerpt())
+                <div class="prose prose-sm max-w-none mt-3 text-slate-700">
+                    {!! $alert->getLocalizedBody() !!}
+                </div>
+                @endif
             </div>
         </div>
         @empty
@@ -54,7 +66,7 @@
             <p class="font-medium text-slate-600">{{ __('alerts.no_alerts') }}</p>
         </div>
         @endforelse
-    </div>
+    @cmsAdd('new:id5_alert', 'เพิ่มการแจ้งเตือน', null, true)</div>
 
     <div class="mt-6">{{ $alerts->links() }}</div>
 </div>

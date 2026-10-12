@@ -12,4 +12,7 @@ return [
     'closed'         => 'Closed',
     'no_stations'    => 'No offices found',
     'view_map'       => 'View on Map',
+
+    // ── Wording moved out of the templates so it can be edited in WordPress ──
+    'weekday_hours' => '08:30 – 16:30',
 ];

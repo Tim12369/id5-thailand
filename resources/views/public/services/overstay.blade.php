@@ -3,7 +3,7 @@
 
 @section('content')
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-    <nav class="text-xs text-slate-500 mb-5" aria-label="breadcrumb">
+    <nav class="text-xs text-slate-500 mb-5" aria-label="{{ __('layout.breadcrumb') }}">
         <a href="{{ route('public.home') }}" class="hover:text-blue-700">{{ __('nav.home') }}</a>
         <span class="mx-1.5">/</span>
         <a href="{{ route('public.services.index') }}" class="hover:text-blue-700">{{ __('nav.services') }}</a>
@@ -33,11 +33,11 @@
             </thead>
             <tbody class="divide-y divide-slate-100">
                 @foreach ([
-                    ['period' => '1–89 days',     'fine' => '500 THB/day (max 20,000)',     'consequence' => __('overstay.consequence_short')],
-                    ['period' => '90 days–1 year', 'fine' => 'Max 20,000 THB + deportation', 'consequence' => __('overstay.consequence_medium')],
-                    ['period' => '1–3 years',      'fine' => 'Deportation',                  'consequence' => __('overstay.consequence_long')],
-                    ['period' => '3–5 years',      'fine' => 'Deportation',                  'consequence' => __('overstay.consequence_vlong')],
-                    ['period' => '> 5 years',      'fine' => 'Deportation',                  'consequence' => __('overstay.consequence_vvlong')],
+                    ['period' => __('overstay.period_short'),  'fine' => __('overstay.fine_short'),  'consequence' => __('overstay.consequence_short')],
+                    ['period' => __('overstay.period_medium'), 'fine' => __('overstay.fine_medium'), 'consequence' => __('overstay.consequence_medium')],
+                    ['period' => __('overstay.period_long'),   'fine' => __('overstay.fine_deportation'), 'consequence' => __('overstay.consequence_long')],
+                    ['period' => __('overstay.period_vlong'),  'fine' => __('overstay.fine_deportation'), 'consequence' => __('overstay.consequence_vlong')],
+                    ['period' => __('overstay.period_vvlong'), 'fine' => __('overstay.fine_deportation'), 'consequence' => __('overstay.consequence_vvlong')],
                 ] as $row)
                 <tr class="hover:bg-slate-50">
                     <td class="px-4 py-3 text-slate-800 font-medium">{{ $row['period'] }}</td>

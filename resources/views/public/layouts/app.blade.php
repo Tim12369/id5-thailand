@@ -6,8 +6,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     {{-- SEO --}}
-    <title>@yield('title', config('app.name', 'ID5 @ Thailand 5.0')) — ตรวจคนเข้าเมือง</title>
-    <meta name="description" content="@yield('meta_description', 'ศูนย์กลางข้อมูลและบริการตรวจคนเข้าเมือง ครบจงจร ทุกสถานะ ทุกมิติ')">
+    <title>@yield('title', config('app.name', 'ID5 @ Thailand 5.0')) — {{ __('layout.title_suffix') }}</title>
+    <meta name="description" content="@yield('meta_description', __('layout.meta_description'))">
     <meta property="og:title" content="@yield('title', 'ID5 @ Thailand 5.0')">
     <meta property="og:description" content="@yield('meta_description', '')">
     <meta property="og:type" content="website">
@@ -55,6 +55,9 @@
 
     {{-- Page-level scripts --}}
     @stack('scripts')
+
+    {{-- Edit mode: top bar + pencils, for website editors only (prints nothing otherwise) --}}
+    @include('public.layouts.partials.cms-edit')
 
 </body>
 </html>

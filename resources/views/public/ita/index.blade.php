@@ -1,11 +1,5 @@
 @extends('public.layouts.app')
-@section('title', 'ITA — Integrity & Transparency Assessment')
-
-@php
-    // Thai fiscal year badge (พ.ศ.), matching the convention already used on
-    // the About Us org chart letterheads elsewhere on the public site.
-    $fiscalYearBe = now()->month >= 10 ? now()->year + 1 + 543 : now()->year + 543;
-@endphp
+@section('title', __('nav.ita') . ' — ' . __('ita.full_name'))
 
 @section('content')
 <div class="bg-linear-to-br from-blue-950 via-blue-900 to-blue-800 relative overflow-hidden">
@@ -13,27 +7,24 @@
     <div class="absolute inset-x-0 top-0 h-64 pointer-events-none bg-[radial-gradient(ellipse_60%_60%_at_50%_0%,_rgba(251,191,36,0.16),transparent_70%)]"></div>
 
     <div class="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12">
-        <nav class="text-xs text-blue-300 mb-6" aria-label="Breadcrumb">
+        <nav class="text-xs text-blue-300 mb-6" aria-label="{{ ucfirst(__('layout.breadcrumb')) }}">
             <a href="{{ route('public.home') }}" class="focus-ring hover:text-white transition-colors">{{ __('nav.home') }}</a>
             <span class="mx-1.5">/</span>
-            <span class="text-blue-200">ITA</span>
+            <span class="text-blue-200">{{ __('nav.ita') }}</span>
         </nav>
 
         <div class="flex flex-wrap items-start justify-between gap-4">
             <div>
                 <span class="section-eyebrow text-amber-300">
-                    <i class="ti ti-shield-check"></i> ITA
+                    <i class="ti ti-shield-check"></i> {{ __('nav.ita') }}
                 </span>
                 <h1 class="text-2xl sm:text-3xl font-bold text-white mt-2 tracking-tight text-balance">
-                    Integrity &amp; Transparency Assessment
+                    {{ __('ita.full_name') }}
                 </h1>
                 <p class="text-blue-200 text-sm mt-1.5 max-w-lg leading-relaxed">
-                    Assessment results and transparency documents, published for public scrutiny.
+                    {{ __('ita.intro') }}
                 </p>
             </div>
-            <span class="inline-flex shrink-0 items-center gap-1.5 bg-white/10 text-amber-200 border border-amber-300/30 rounded-full px-4 py-1.5 text-sm font-bold">
-                <i class="ti ti-calendar-event text-xs"></i> {{ $fiscalYearBe }}
-            </span>
         </div>
     </div>
 </div>
@@ -42,7 +33,7 @@
     <div class="space-y-12">
         @forelse ($sections as $section)
             @php $sectionHeadingId = 'ita-section-' . $section->id; @endphp
-            <section aria-labelledby="{{ $sectionHeadingId }}">
+            @cmsEdit($section)<section aria-labelledby="{{ $sectionHeadingId }}">
                 <div class="bg-linear-to-r from-slate-800 via-slate-700 to-slate-800 text-white rounded-xl px-5 py-3.5 mb-5 flex items-center gap-3 shadow-[0_8px_20px_-8px_rgba(15,23,42,0.4)]">
                     <span class="shrink-0 w-8 h-8 rounded-lg bg-amber-400/90 text-slate-900 flex items-center justify-center text-xs font-extrabold" aria-hidden="true">
                         {{ $section->section_number }}
@@ -60,6 +51,7 @@
                             $color = $card->color ?? '#4F46E5';
                             $panelId = 'ita-card-panel-' . $card->id;
                         @endphp
+                        @cmsEdit($card)
                         <div x-data="{ open: false }"
                              class="group bg-white rounded-2xl border border-slate-200 overflow-hidden transition-all duration-200 hover:shadow-[0_12px_28px_-10px_rgba(15,23,42,0.18)] hover:-translate-y-0.5"
                              :class="open ? 'shadow-[0_12px_28px_-10px_rgba(15,23,42,0.18)] -translate-y-0.5 border-slate-300' : ''">
@@ -74,8 +66,12 @@
                                 </span>
                                 <span class="flex-1 min-w-0">
                                     <span class="flex items-center gap-1.5 font-semibold text-slate-800 text-sm leading-snug">
-                                        @if ($card->icon)
-                                            <i class="ti ti-{{ $card->icon }} text-base shrink-0" style="color: {{ $color }}" aria-hidden="true"></i>
+                                        {{-- A picture the editor uploaded, else an icon: the one they
+                                             named, or one chosen to suit the topic. --}}
+                                        @if ($card->icon_image_url)
+                                            <img src="{{ $card->icon_image_url }}" alt="" class="w-6 h-6 rounded object-contain shrink-0" loading="lazy">
+                                        @else
+                                            <i class="ti ti-{{ $card->display_icon }} text-base shrink-0" style="color: {{ $color }}" aria-hidden="true"></i>
                                         @endif
                                         {{ $card->getLocalizedTitle() }}
                                     </span>
@@ -100,7 +96,7 @@
         @empty
             <div class="bg-white rounded-2xl border border-slate-200 p-10 text-center">
                 <i class="ti ti-shield-search text-3xl text-slate-300 mb-3 block"></i>
-                <p class="text-sm text-slate-400">No ITA information has been published yet.</p>
+                <p class="text-sm text-slate-400">{{ __('ita.empty') }}</p>
             </div>
         @endforelse
     </div>

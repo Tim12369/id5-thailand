@@ -1,3 +1,38 @@
+# ID5 @ Thailand 5.0
+
+The public website of Immigration Division 5, plus the internal staff portal behind it.
+
+* **Public website** — Laravel 12 + Blade + Alpine.js + Tailwind CSS 4.
+* **Website content** — authored in **WordPress** and synced into this application's database.
+  Administrators edit the site in `wp-admin`; visitors are served from here, so a WordPress
+  outage has no effect on the public site.
+* **Internal portal** (`/internal`) — Executive Dashboard, Command Center, user management
+  and the audit log. It no longer edits website content.
+
+## Documentation
+
+| Document | For |
+|---|---|
+| [docs/wordpress-setup.md](docs/wordpress-setup.md) | Installing, configuring, deploying and rolling back the WordPress integration |
+| [docs/admin-wordpress-guide.md](docs/admin-wordpress-guide.md) | Non-developer administrators, in Thai |
+| [docs/wordpress-migration-plan.md](docs/wordpress-migration-plan.md) | The audit, content model and architectural decision behind the integration |
+| [wordpress/plugins/id5-cms/README.md](wordpress/plugins/id5-cms/README.md) | The WordPress plugin that defines the content model |
+| [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) | Deploying the Laravel application |
+
+## Everyday commands
+
+```bash
+composer dev          # serve, queue worker, logs and Vite together
+php artisan test      # test suite
+npm run build         # production frontend build
+
+php artisan cms:status   # is the website in step with WordPress?
+php artisan cms:pull     # reconcile content from WordPress
+php artisan cms:push     # one-time export of existing content into WordPress
+```
+
+---
+
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">

@@ -5,7 +5,7 @@
 <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
     <div class="mb-8">
-        <nav class="text-xs text-slate-500 mb-2" aria-label="breadcrumb">
+        <nav class="text-xs text-slate-500 mb-2" aria-label="{{ __('layout.breadcrumb') }}">
             <a href="{{ route('public.home') }}" class="hover:text-blue-700">{{ __('nav.home') }}</a>
             <span class="mx-1.5">/</span>
             <span>{{ __('nav.downloads') }}</span>
@@ -30,6 +30,7 @@
 
         <div class="grid sm:grid-cols-2 gap-3">
             @foreach ($forms[$cat] as $form)
+            @cmsEdit($form)
             <div class="flex items-center gap-4 bg-white rounded-2xl border border-slate-200
                         hover:border-blue-300 hover:shadow-sm transition-all p-4 group">
                 {{-- Icon --}}

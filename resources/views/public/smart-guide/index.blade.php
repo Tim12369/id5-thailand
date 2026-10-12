@@ -7,7 +7,7 @@
     <div class="text-center mb-8">
         <div class="inline-flex items-center gap-2 bg-blue-50 text-blue-700 text-xs font-medium
                     px-3 py-1.5 rounded-full mb-3">
-            <i class="ti ti-sparkles"></i> SW1H Smart Guide
+            <i class="ti ti-sparkles"></i> {{ __('smart_guide.badge') }}
         </div>
         <h1 class="text-3xl font-bold text-slate-800 mb-2">{{ __('smart_guide.title') }}</h1>
         <p class="text-slate-500 max-w-xl mx-auto">{{ __('smart_guide.subtitle') }}</p>

@@ -4,10 +4,10 @@
 @section('content')
 <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-    <nav class="text-xs text-slate-500 mb-5" aria-label="breadcrumb">
+    <nav class="text-xs text-slate-500 mb-5" aria-label="{{ __('layout.breadcrumb') }}">
         <a href="{{ route('public.home') }}" class="hover:text-blue-700">{{ __('nav.home') }}</a>
         <span class="mx-1.5">/</span>
-        <a href="{{ route('public.smart-guide.index') }}" class="hover:text-blue-700">Smart Guide</a>
+        <a href="{{ route('public.smart-guide.index') }}" class="hover:text-blue-700">{{ __('nav.smart_guide_short') }}</a>
         <span class="mx-1.5">/</span>
         <span>{{ __('smart_guide.search_button') }}</span>
     </nav>

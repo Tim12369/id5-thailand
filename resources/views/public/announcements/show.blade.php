@@ -2,9 +2,10 @@
 @section('title', $article->getLocalizedTitle())
 
 @section('content')
+@cmsEdit($article)
 <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-    <nav class="text-xs text-slate-500 mb-5" aria-label="breadcrumb">
+    <nav class="text-xs text-slate-500 mb-5" aria-label="{{ __('layout.breadcrumb') }}">
         <a href="{{ route('public.home') }}" class="hover:text-blue-700">{{ __('nav.home') }}</a>
         <span class="mx-1.5">/</span>
         <a href="{{ route('public.announcements.index') }}" class="hover:text-blue-700">
@@ -28,6 +29,15 @@
         <h1 class="text-xl lg:text-2xl font-bold text-slate-800 leading-tight mb-5">
             {{ $article->getLocalizedTitle() }}
         </h1>
+
+        {{-- Cover picture, when the editor chose one --}}
+        @if ($article->thumbnail_url)
+        <div class="rounded-2xl overflow-hidden mb-6 bg-slate-100">
+            <img src="{{ $article->thumbnail_url }}"
+                 alt="{{ $article->getLocalizedTitle() }}"
+                 class="w-full h-auto">
+        </div>
+        @endif
 
         <div class="prose prose-slate prose-sm sm:prose-base max-w-none
                     prose-headings:font-bold prose-a:text-blue-700

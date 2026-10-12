@@ -155,11 +155,7 @@ class AiAssistantService
             default => 'Respond ONLY in Thai (ภาษาไทย).',
         };
 
-        $disclaimer = match ($locale) {
-            'en' => 'Information is provided for guidance purposes only. Final decisions are subject to official Thai Immigration Bureau regulations.',
-            'zh' => '本信息仅供参考。最终决定以泰国移民局官方规定为准。',
-            default => 'ข้อมูลนี้ให้ไว้เพื่อประกอบการตัดสินใจเท่านั้น การตัดสินใจขั้นสุดท้ายขึ้นอยู่กับกฎระเบียบอย่างเป็นทางการของสำนักงานตรวจคนเข้าเมืองไทย',
-        };
+        $disclaimer = __('ai.disclaimer_full', [], in_array($locale, ['en', 'zh'], true) ? $locale : 'th');
 
         $personaLabel = $personaLabels[$persona] ?? 'General Public';
 
@@ -225,7 +221,7 @@ PROMPT;
                 'forms'      => [],
                 'links'      => [],
                 'office_tip' => '',
-                'disclaimer' => 'ข้อมูลนี้ให้ไว้เพื่อประกอบการตัดสินใจเท่านั้น',
+                'disclaimer' => __('ai.disclaimer_short', [], 'th'),
             ];
         }
 
@@ -236,7 +232,7 @@ PROMPT;
             'forms'      => (array) ($parsed['forms']     ?? []),
             'links'      => (array) ($parsed['links']     ?? []),
             'office_tip' => $parsed['office_tip'] ?? '',
-            'disclaimer' => $parsed['disclaimer'] ?? 'ข้อมูลนี้ให้ไว้เพื่อประกอบการตัดสินใจเท่านั้น',
+            'disclaimer' => $parsed['disclaimer'] ?? __('ai.disclaimer_short', [], 'th'),
         ];
     }
 
@@ -244,11 +240,18 @@ PROMPT;
 
     private function fallbackResponse(string $locale): string
     {
-        $msg = match ($locale) {
-            'en' => '{"summary":"The AI assistant is currently unavailable. Please visit our office or call 1178 for assistance.","steps":[],"documents":[],"forms":[],"links":[{"label":"Contact Us","path":"/contact"}],"office_tip":"Call immigration hotline: 1178","disclaimer":"Information is provided for guidance purposes only."}',
-            'zh' => '{"summary":"AI助手目前不可用。请访问我们的办公室或拨打1178寻求帮助。","steps":[],"documents":[],"forms":[],"links":[{"label":"联系我们","path":"/contact"}],"office_tip":"拨打移民热线：1178","disclaimer":"本信息仅供参考。"}',
-            default => '{"summary":"ขณะนี้ระบบ AI ไม่พร้อมใช้งาน กรุณาติดต่อสำนักงานตรวจคนเข้าเมืองหรือโทร 1178","steps":[],"documents":[],"forms":[],"links":[{"label":"ติดต่อเรา","path":"/contact"}],"office_tip":"โทรสายด่วนตรวจคนเข้าเมือง: 1178","disclaimer":"ข้อมูลนี้ให้ไว้เพื่อประกอบการตัดสินใจเท่านั้น"}',
-        };
-        return $msg;
+        // The wording is in the language files (`ai.unavailable_*`), where
+        // editors can change it from WordPress.
+        $locale = in_array($locale, ['en', 'zh'], true) ? $locale : 'th';
+
+        return json_encode([
+            'summary'    => __('ai.unavailable_summary', [], $locale),
+            'steps'      => [],
+            'documents'  => [],
+            'forms'      => [],
+            'links'      => [['label' => __('ai.unavailable_link', [], $locale), 'path' => '/contact']],
+            'office_tip' => __('ai.unavailable_tip', [], $locale),
+            'disclaimer' => __('ai.unavailable_disclaimer', [], $locale),
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 }

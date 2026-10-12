@@ -3,7 +3,7 @@
 
 @section('content')
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-    <nav class="text-xs text-slate-500 mb-5" aria-label="breadcrumb">
+    <nav class="text-xs text-slate-500 mb-5" aria-label="{{ __('layout.breadcrumb') }}">
         <a href="{{ route('public.home') }}" class="hover:text-blue-700">{{ __('nav.home') }}</a>
         <span class="mx-1.5">/</span>
         <a href="{{ route('public.services.index') }}" class="hover:text-blue-700">{{ __('nav.services') }}</a>
@@ -54,13 +54,13 @@
     <h2 class="text-lg font-semibold text-slate-800 mb-3">{{ __('services.forms') }}</h2>
     <div class="space-y-2 mb-6">
         @foreach ($forms as $form)
-        <div class="flex items-center gap-4 p-3 bg-white rounded-xl border border-slate-200">
+        @cmsEdit($form)<div class="flex items-center gap-4 p-3 bg-white rounded-xl border border-slate-200">
             <i class="ti ti-file-type-pdf text-red-600 text-xl shrink-0"></i>
             <div class="flex-1"><p class="text-sm font-medium text-slate-800">{{ $form->getLocalizedName() }}</p></div>
             <a href="{{ route('public.downloads.download', $form->id) }}"
                class="text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200
                       px-3 py-1.5 rounded-lg hover:bg-blue-100" download>
-                <i class="ti ti-download mr-1"></i>PDF
+                <i class="ti ti-download mr-1"></i>{{ __('services.pdf') }}
             </a>
         </div>
         @endforeach

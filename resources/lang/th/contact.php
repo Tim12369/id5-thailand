@@ -12,4 +12,7 @@ return [
     'closed'         => 'ปิดทำการ',
     'no_stations'    => 'ไม่พบสำนักงาน',
     'view_map'       => 'ดูแผนที่',
+
+    // ── Wording moved out of the templates so it can be edited in WordPress ──
+    'weekday_hours' => '08:30 – 16:30',
 ];

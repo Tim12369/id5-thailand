@@ -48,4 +48,7 @@ return [
         'self_surrender'      => 'การมอบตัว',
         'self_surrender_desc' => 'หากพบว่าตนเองอยู่เกินกำหนด ควรรีบมอบตัวที่สำนักงานตรวจคนเข้าเมืองใกล้บ้านโดยเร็วที่สุด',
     ],
+
+    // ── Wording moved out of the templates so it can be edited in WordPress ──
+    'pdf' => 'PDF',
 ];

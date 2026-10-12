@@ -32,4 +32,10 @@ return [
     'documents_checklist' => 'รายการเอกสารที่ต้องใช้',
     'steps_title'    => 'ขั้นตอนการดำเนินการ',
     'locations_title' => 'สถานที่ดำเนินการ',
+
+    // ── Wording moved out of the templates so it can be edited in WordPress ──
+    'badge' => 'SW1H Smart Guide',
+    'deadline_24_hours' => '24 ชั่วโมง',
+    'every_n_days' => 'ทุก :count วัน',
+    'within_24_hours' => 'ภายใน 24 ชั่วโมง',
 ];

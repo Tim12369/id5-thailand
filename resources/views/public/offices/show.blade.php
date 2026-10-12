@@ -2,10 +2,11 @@
 @section('title', $office['name'])
 
 @section('content')
+@cmsEdit($station)
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
     <div class="mb-6">
-        <nav class="text-xs text-slate-500 mb-2" aria-label="breadcrumb">
+        <nav class="text-xs text-slate-500 mb-2" aria-label="{{ __('layout.breadcrumb') }}">
             <a href="{{ route('public.home') }}" class="hover:text-blue-700">{{ __('nav.home') }}</a>
             <span class="mx-1.5">/</span>
             <a href="{{ route('public.offices.index') }}" class="hover:text-blue-700">{{ __('offices.title') }}</a>

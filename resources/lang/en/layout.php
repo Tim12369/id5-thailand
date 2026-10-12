@@ -17,4 +17,14 @@ return [
     'close_menu'             => 'Close menu',
     'language'               => 'Language',
     'footer_emergency_lead'  => 'Need urgent help? Our 24-hour immigration hotline is always open.',
+
+    // ── Wording moved out of the templates so it can be edited in WordPress ──
+    'lang_th_short' => 'TH',
+    'lang_en_short' => 'EN',
+    'lang_th' => 'ภาษาไทย',
+    'lang_en' => 'English',
+    'title_suffix' => 'ตรวจคนเข้าเมือง',
+    'meta_description' => 'ศูนย์กลางข้อมูลและบริการตรวจคนเข้าเมือง ครบจงจร ทุกสถานะ ทุกมิติ',
+
+    'breadcrumb' => 'breadcrumb',
 ];

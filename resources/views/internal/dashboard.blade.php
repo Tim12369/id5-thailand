@@ -25,6 +25,23 @@
     @endphp
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {{-- Website content lives in WordPress now, so the most common errand
+             gets a tile of its own rather than leaving staff to guess. --}}
+        @if ($websiteContent = \App\Support\PortalNav::websiteContentLink())
+            <a href="{{ $websiteContent['url'] }}" target="_blank" rel="noopener" class="portal-module-tile">
+                <span class="portal-tile-icon">
+                    <i class="ti {{ $websiteContent['icon'] }} text-2xl"></i>
+                </span>
+                <div>
+                    <h3 class="text-base font-semibold text-white">
+                        {{ $websiteContent['label'] }}
+                        <i class="ti ti-external-link text-sm opacity-60"></i>
+                    </h3>
+                    <p class="text-sm text-slate-400 mt-1">Edit the public website in WordPress</p>
+                </div>
+            </a>
+        @endif
+
         @foreach ($tiles as $tile)
             @if ($tile['route'] !== 'internal.dashboard')
                 <a href="{{ route($tile['route']) }}" class="portal-module-tile">

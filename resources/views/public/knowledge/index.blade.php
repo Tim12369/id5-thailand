@@ -5,7 +5,7 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
     <div class="mb-8">
-        <nav class="text-xs text-slate-500 mb-2" aria-label="breadcrumb">
+        <nav class="text-xs text-slate-500 mb-2" aria-label="{{ __('layout.breadcrumb') }}">
             <a href="{{ route('public.home') }}" class="hover:text-blue-700">{{ __('nav.home') }}</a>
             <span class="mx-1.5">/</span>
             <span>{{ __('nav.knowledge') }}</span>
@@ -32,7 +32,7 @@
                     </li>
                     @foreach ($categories as $cat)
                     <li>
-                        <a href="{{ route('public.knowledge.index', ['category' => $cat->slug]) }}"
+                        @cmsEdit($cat)<a href="{{ route('public.knowledge.index', ['category' => $cat->slug]) }}"
                            class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors
                                   {{ request('category') === $cat->slug ? 'bg-blue-50 text-blue-700 font-medium' : 'text-slate-600 hover:bg-slate-50' }}">
                             @if ($cat->icon)
@@ -49,13 +49,13 @@
                        class="flex items-center gap-2 px-3 py-2 text-sm text-slate-600
                               hover:bg-slate-50 rounded-lg transition-colors">
                         <i class="ti ti-help text-sm opacity-60"></i>
-                        FAQ
+                        {{ __('nav.faq_short') }}
                     </a>
                     <a href="{{ route('public.smart-guide.index') }}"
                        class="flex items-center gap-2 px-3 py-2 text-sm text-slate-600
                               hover:bg-slate-50 rounded-lg transition-colors">
                         <i class="ti ti-sparkles text-sm opacity-60"></i>
-                        Smart Guide
+                        {{ __('nav.smart_guide_short') }}
                     </a>
                 </div>
             </div>
@@ -71,6 +71,7 @@
             @else
             <div class="grid sm:grid-cols-2 gap-4">
                 @foreach ($articles as $article)
+                @cmsEdit($article)
                 <a href="{{ route('public.knowledge.show', $article->slug) }}"
                    class="flex flex-col bg-white rounded-2xl border border-slate-200
                           hover:border-blue-300 hover:shadow-md transition-all duration-200 group overflow-hidden">

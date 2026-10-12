@@ -127,6 +127,24 @@ class Article extends Model
         };
     }
 
+    /**
+     * Whether the body says or shows more than the summary does. A list that
+     * prints the summary uses this to decide whether the body is worth adding
+     * underneath, rather than repeating the same sentence twice.
+     */
+    public function hasBodyBeyondExcerpt(): bool
+    {
+        $body = $this->getLocalizedBody();
+
+        if (stripos($body, '<img') !== false) {
+            return true;
+        }
+
+        $plain = fn (?string $html) => trim(preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags((string) $html), ENT_QUOTES | ENT_HTML5)));
+
+        return $plain($body) !== '' && $plain($body) !== $plain($this->getLocalizedExcerpt());
+    }
+
     public function getThumbnailUrlAttribute(): ?string
     {
         return $this->thumbnail

@@ -81,4 +81,7 @@ return [
         'line'      => ['title' => 'LINE Official Account', 'desc' => 'Chat with us on LINE for quick answers and updates.', 'cta' => 'Add Friend'],
         'map'       => ['title' => 'Find an Office', 'desc' => 'Locate the nearest immigration office and get directions.', 'cta' => 'View Map'],
     ],
+
+    // ── Wording moved out of the templates so it can be edited in WordPress ──
+    'meta_description' => 'Convenient, transparent, and reliable service — safety for both Thai citizens and foreigners.',
 ];

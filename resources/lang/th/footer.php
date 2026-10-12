@@ -20,4 +20,7 @@ return [
     'accessibility_link'  => 'คำชี้แจงการเข้าถึงเว็บไซต์',
     'ita_link'            => 'คุณธรรมและความโปร่งใส (ITA)',
     'opendata_link'       => 'ข้อมูลเปิดภาครัฐ',
+
+    // ── Wording moved out of the templates so it can be edited in WordPress ──
+    'custom_links_title' => 'Quick Links',
 ];

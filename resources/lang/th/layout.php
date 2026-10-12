@@ -17,4 +17,14 @@ return [
     'close_menu'             => 'ปิดเมนู',
     'language'               => 'ภาษา',
     'footer_emergency_lead'  => 'ต้องการความช่วยเหลือเร่งด่วน? สายด่วนตรวจคนเข้าเมืองพร้อมให้บริการตลอด 24 ชั่วโมง',
+
+    // ── Wording moved out of the templates so it can be edited in WordPress ──
+    'lang_th_short' => 'TH',
+    'lang_en_short' => 'EN',
+    'lang_th' => 'ภาษาไทย',
+    'lang_en' => 'English',
+    'title_suffix' => 'ตรวจคนเข้าเมือง',
+    'meta_description' => 'ศูนย์กลางข้อมูลและบริการตรวจคนเข้าเมือง ครบจงจร ทุกสถานะ ทุกมิติ',
+
+    'breadcrumb' => 'breadcrumb',
 ];

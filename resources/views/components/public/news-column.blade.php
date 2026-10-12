@@ -1,7 +1,7 @@
 {{-- components/public/news-column.blade.php --}}
-{{-- Props: $icon, $title, $items, $viewAllRoute = null, $emptyText --}}
+{{-- Props: $icon, $title, $items, $viewAllRoute = null, $emptyText, $add = null, $addLabel = '' (edit mode only) --}}
 
-@props(['icon', 'title', 'items', 'viewAllRoute' => null, 'emptyText'])
+@props(['icon', 'title', 'items', 'viewAllRoute' => null, 'emptyText', 'add' => null, 'addLabel' => ''])
 
 <div class="card overflow-hidden">
     <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
@@ -23,5 +23,5 @@
             <p class="text-slate-400 text-sm">{{ $emptyText }}</p>
         </div>
         @endforelse
-    </div>
+    @cmsAdd($add, $addLabel, null, true)</div>
 </div>

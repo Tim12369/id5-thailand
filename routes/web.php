@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Cms\EditModeController;
 use App\Http\Controllers\Public\AboutController;
 use App\Http\Controllers\Public\AiAssistantController;
 use App\Http\Controllers\Public\AssessmentController;
@@ -26,9 +27,16 @@ use Illuminate\Support\Facades\Route;
 // Middleware: web session, locale detection, security headers
 // ═══════════════════════════════════════════════════════════════
 
-Route::middleware(['web', 'set.locale'])
+// `cms.edit` only does anything for a website editor arriving from WordPress:
+// it turns on the pencils and the top bar (see App\Support\CmsEdit). Every
+// other visitor passes straight through it.
+Route::middleware(['web', 'set.locale', 'cms.edit'])
     ->name('public.')
     ->group(function () {
+
+        // ── Edit mode (website editors only) ───────────────────────
+        Route::get('/edit', [EditModeController::class, 'enter'])->name('cms-edit.enter');
+        Route::get('/edit/exit', [EditModeController::class, 'leave'])->name('cms-edit.leave');
 
         // ── Homepage ───────────────────────────────────────────────
         Route::get('/', [HomeController::class, 'index'])->name('home');

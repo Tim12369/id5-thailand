@@ -7,7 +7,7 @@
     <div class="mb-8">
         <div class="inline-flex items-center gap-2 bg-green-50 text-green-700 text-xs font-medium
                     px-3 py-1.5 rounded-full mb-3">
-            <i class="ti ti-database"></i> Open Government Data
+            <i class="ti ti-database"></i> {{ __('open_data.badge') }}
         </div>
         <h1 class="text-2xl font-bold text-slate-800 mb-1">{{ __('open_data.title') }}</h1>
         <p class="text-slate-500 text-sm">{{ __('open_data.subtitle') }}</p>
@@ -37,10 +37,10 @@
                 <p class="text-xs text-slate-500 mb-3">{{ __($ds['key'] . '.desc') }}</p>
                 <div class="flex gap-2">
                     <span class="inline-flex items-center gap-1 text-xs px-2.5 py-1 bg-green-50 text-green-700 rounded-lg border border-green-200">
-                        <i class="ti ti-download text-xs"></i> JSON
+                        <i class="ti ti-download text-xs"></i> {{ __('open_data.format_json') }}
                     </span>
                     <span class="inline-flex items-center gap-1 text-xs px-2.5 py-1 bg-blue-50 text-blue-700 rounded-lg border border-blue-200">
-                        <i class="ti ti-download text-xs"></i> CSV
+                        <i class="ti ti-download text-xs"></i> {{ __('open_data.format_csv') }}
                     </span>
                 </div>
             </div>
@@ -53,7 +53,7 @@
         <a href="{{ url('/api/v1/open-data/stations') }}"
            class="inline-flex items-center gap-2 text-sm font-medium text-blue-700 bg-blue-50
                   border border-blue-200 px-4 py-2 rounded-xl hover:bg-blue-100 transition-colors">
-            <i class="ti ti-api"></i> REST API
+            <i class="ti ti-api"></i> {{ __('open_data.api_button') }}
         </a>
     </div>
 </div>

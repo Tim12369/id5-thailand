@@ -7,6 +7,8 @@
         'announcements' => ['label' => __('home.announcements'), 'icon' => 'ti-speakerphone'],
         'alerts' => ['label' => __('home.alerts'), 'icon' => 'ti-alert-triangle'],
     ];
+    // Edit mode only: what the "+" under the list adds, for the tab that is open.
+    $addNew = ['news' => ['new:post', 'เพิ่มข่าว'], 'announcements' => ['new:id5_announcement', 'เพิ่มประกาศ'], 'alerts' => ['new:id5_alert', 'เพิ่มการแจ้งเตือน']][$tab] ?? [null, ''];
 @endphp
 
 @section('content')
@@ -14,7 +16,7 @@
 
     {{-- Page header --}}
     <div class="mb-6">
-        <nav class="text-xs text-slate-500 mb-2" aria-label="breadcrumb">
+        <nav class="text-xs text-slate-500 mb-2" aria-label="{{ __('layout.breadcrumb') }}">
             <a href="{{ route('public.home') }}" class="hover:text-blue-700">{{ __('nav.home') }}</a>
             <span class="mx-1.5">/</span>
             <span>{{ __('nav.news') }}</span>
@@ -51,5 +53,5 @@
             {{ $articles->appends(['tab' => $tab])->links() }}
         </div>
     @endif
-</div>
+@cmsAdd($addNew[0], $addNew[1], null, true)</div>
 @endsection

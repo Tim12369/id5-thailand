@@ -14,6 +14,7 @@ $compactRouteMap = [
 $cr = $compactRouteMap[$article->type] ?? ['name' => 'public.news.show', 'param' => $article->slug];
 $compactHref = $cr['param'] ? route($cr['name'], $cr['param']) : route($cr['name']);
 @endphp
+@cmsEdit($article)
 <a href="{{ $compactHref }}"
    class="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 group transition-colors">
     <div class="shrink-0 w-16 h-16 rounded-lg bg-slate-100 overflow-hidden">
@@ -45,6 +46,7 @@ $routeMap = [
 $route = $routeMap[$article->type] ?? 'public.news.show';
 @endphp
 
+@cmsEdit($article)
 <a href="{{ $article->type === 'alert' ? route($route) : route($route, $article->slug) }}"
    class="card card-hover flex gap-4 p-4 group">
 

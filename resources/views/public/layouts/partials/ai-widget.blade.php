@@ -12,16 +12,16 @@
     }
 
     $personas = [
-        'tourist'      => ['label_th' => 'นักท่องเที่ยว', 'label_en' => 'Tourist',      'icon' => 'ti-plane'],
-        'student'      => ['label_th' => 'นักเรียน',      'label_en' => 'Student',       'icon' => 'ti-school'],
-        'worker'       => ['label_th' => 'แรงงาน',        'label_en' => 'Worker',        'icon' => 'ti-briefcase'],
-        'investor'     => ['label_th' => 'นักลงทุน',      'label_en' => 'Investor',      'icon' => 'ti-chart-bar'],
-        'hotel'        => ['label_th' => 'โรงแรม',        'label_en' => 'Hotel',         'icon' => 'ti-building'],
-        'employer'     => ['label_th' => 'นายจ้าง',       'label_en' => 'Employer',      'icon' => 'ti-users'],
-        'thai_citizen' => ['label_th' => 'คนไทย',         'label_en' => 'Thai Citizen',  'icon' => 'ti-flag'],
-        'retiree'      => ['label_th' => 'ผู้เกษียณ',     'label_en' => 'Retiree',       'icon' => 'ti-heart'],
-        'family'       => ['label_th' => 'ครอบครัว',      'label_en' => 'Family',        'icon' => 'ti-home'],
-        'officer'      => ['label_th' => 'เจ้าหน้าที่',   'label_en' => 'Officer',       'icon' => 'ti-shield'],
+        'tourist' => ['label' => __('ai.persona_tourist'), 'icon' => 'ti-plane'],
+        'student' => ['label' => __('ai.persona_student'), 'icon' => 'ti-school'],
+        'worker' => ['label' => __('ai.persona_worker'), 'icon' => 'ti-briefcase'],
+        'investor' => ['label' => __('ai.persona_investor'), 'icon' => 'ti-chart-bar'],
+        'hotel' => ['label' => __('ai.persona_hotel'), 'icon' => 'ti-building'],
+        'employer' => ['label' => __('ai.persona_employer'), 'icon' => 'ti-users'],
+        'thai_citizen' => ['label' => __('ai.persona_thai_citizen'), 'icon' => 'ti-flag'],
+        'retiree' => ['label' => __('ai.persona_retiree'), 'icon' => 'ti-heart'],
+        'family' => ['label' => __('ai.persona_family'), 'icon' => 'ti-home'],
+        'officer' => ['label' => __('ai.persona_officer'), 'icon' => 'ti-shield'],
     ];
 @endphp
 
@@ -34,7 +34,7 @@
     {{-- ── Floating trigger button ── --}}
     <button
         @click="open = !open"
-        :aria-label="open ? '{{ __('ai.close') }}' : '{{ __('ai.open_chat') }}'"
+        :aria-label="open ? @jsText(__('ai.close')) : @jsText(__('ai.open_chat'))"
         class="ai-fab"
         style="
             width:3.5rem;height:3.5rem;border-radius:50%;
@@ -57,7 +57,7 @@
             position:absolute;top:-4px;right:-4px;
             background:#d9a437;color:#fff;font-size:.6rem;font-weight:700;
             border-radius:9999px;padding:1px 5px;letter-spacing:.05em;
-        ">AI</span>
+        ">{{ __('ai.badge') }}</span>
         {{-- Unread dot when closed --}}
         <span x-show="!open && unread > 0" style="
             position:absolute;top:-2px;left:-2px;
@@ -106,7 +106,7 @@
                 <div style="display:flex;align-items:center;gap:.5rem;">
                     <button
                         @click="resetConversation()"
-                        :title="'{{ __('ai.new_conversation') }}'"
+                        :title="@jsText(__('ai.new_conversation'))"
                         style="background:rgba(255,255,255,.15);border:none;border-radius:.4rem;padding:.3rem .45rem;cursor:pointer;color:#fff;font-size:.85rem;"
                     ><i class="ti ti-refresh"></i></button>
                     <button
@@ -127,7 +127,7 @@
                     style="border:1px solid;border-radius:9999px;padding:.18rem .55rem;font-size:.68rem;cursor:pointer;transition:all .15s;white-space:nowrap;"
                 >
                     <i class="ti {{ $p['icon'] }}" style="margin-right:.15rem;font-size:.7rem;"></i>
-                    {{ $locale === 'th' ? $p['label_th'] : $p['label_en'] }}
+                    {{ $p['label'] }}
                 </button>
                 @endforeach
             </div>
@@ -329,7 +329,7 @@
                         x-model="input"
                         @keydown.enter.prevent="if(!$event.shiftKey) sendMessage()"
                         :disabled="loading"
-                        :placeholder="'{{ __('ai.placeholder') }}'"
+                        :placeholder="@jsText(__('ai.placeholder'))"
                         maxlength="500"
                         rows="1"
                         x-ref="inputArea"
@@ -475,13 +475,13 @@ function aiWidget(initialPersona, locale, csrfToken) {
                 const data = await res.json();
 
                 if (!res.ok) {
-                    this.errorMsg = data.message || data.error || '{{ __('ai.error_generic') }}';
+                    this.errorMsg = data.message || data.error || @jsText(__('ai.error_generic'));
                 } else {
                     this.messages.push({ role: 'assistant', data });
                     if (!this.open) this.unread++;
                 }
             } catch (e) {
-                this.errorMsg = '{{ __('ai.error_generic') }}';
+                this.errorMsg = @jsText(__('ai.error_generic'));
             } finally {
                 this.loading = false;
                 this.$nextTick(() => {

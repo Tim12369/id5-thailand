@@ -52,6 +52,19 @@ return [
 
     'channels' => [
 
+        /*
+         * Content syncing between WordPress and this application. Kept in its
+         * own daily file so an operator can answer "did that edit arrive?"
+         * without reading through every other application log line.
+         */
+        'cms' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/cms.log'),
+            'level' => env('CMS_LOG_LEVEL', 'info'),
+            'days' => env('CMS_LOG_DAYS', 30),
+            'replace_placeholders' => true,
+        ],
+
         'stack' => [
             'driver' => 'stack',
             'channels' => explode(',', (string) env('LOG_STACK', 'single')),

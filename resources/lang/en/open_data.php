@@ -10,4 +10,10 @@ return [
         'stats'    => ['title' => 'Monthly Statistics',   'desc' => 'Entry/exit counts (aggregated, anonymised)'],
         'forms'    => ['title' => 'Forms Catalog',        'desc' => 'All official immigration forms'],
     ],
+
+    // ── Wording moved out of the templates so it can be edited in WordPress ──
+    'badge' => 'Open Government Data',
+    'format_json' => 'JSON',
+    'format_csv' => 'CSV',
+    'api_button' => 'REST API',
 ];
