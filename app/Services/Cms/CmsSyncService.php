@@ -2,7 +2,9 @@
 
 namespace App\Services\Cms;
 
+use App\Models\Article;
 use App\Models\Category;
+use App\Models\Faq;
 use App\Models\ItaCard;
 use App\Models\ItaSection;
 use App\Models\MenuItem;
@@ -157,6 +159,64 @@ class CmsSyncService
         }
 
         return $summary;
+    }
+
+    /**
+     * Retire what predates WordPress: rows of WordPress-managed content that
+     * no WordPress item owns.
+     *
+     * A database filled on its own — seed data on a demonstration site — has
+     * its own news, FAQs, organisation chart and ITA topics. The first pull
+     * adds WordPress's next to them and every one of those appears twice.
+     * (Offices, forms, homepage cards and guide topics do not: they are found
+     * by their own code or key, and the existing row is simply taken over.)
+     *
+     * Deliberately not part of an ordinary pull, which leaves rows it does not
+     * own alone. It is asked for — `cms:pull --retire-unmanaged`, or
+     * CMS_RETIRE_UNMANAGED for a host with no command line — and it only acts
+     * on a type the pull just fetched completely: at least one item, and no
+     * failures. News is moved to the trash and FAQs hidden, both recoverable;
+     * people and ITA topics, which have no such state, are removed.
+     *
+     * @param  array<string,array{synced:int,skipped:int,failed:int}> $summary What syncAll() returned.
+     * @return array<string,int> Rows retired, by kind.
+     */
+    public function retireUnmanaged(array $summary): array
+    {
+        $complete = fn (string $postType) => ($summary[$postType]['synced'] ?? 0) > 0 && ($summary[$postType]['failed'] ?? 1) === 0;
+        $retired  = [];
+
+        foreach (['post' => 'news', 'id5_announcement' => 'announcement', 'id5_alert' => 'alert', 'id5_knowledge' => 'kb_public'] as $postType => $type) {
+            if ($complete($postType)) {
+                $retired[$type] = Article::where('type', $type)->whereNull('wp_post_id')->get()->each->delete()->count();
+            }
+        }
+
+        if ($complete('id5_faq')) {
+            $retired['faq'] = Faq::whereNull('wp_post_id')->where('is_active', true)->update(['is_active' => false]);
+        }
+
+        if ($complete('id5_person')) {
+            $retired['person'] = OrgChartMember::whereNull('wp_post_id')->delete();
+
+            // Rows and units left with nobody in them, that WordPress does not know.
+            OrgChartTier::whereNull('cms_key')->doesntHave('members')->delete();
+            OrgChartSection::whereNull('wp_term_id')->doesntHave('tiers')->delete();
+        }
+
+        if ($complete('id5_ita_card')) {
+            $retired['ita_topic'] = ItaCard::whereNull('wp_post_id')->delete();
+
+            ItaSection::whereNull('wp_term_id')->doesntHave('cards')->delete();
+        }
+
+        $retired = array_filter($retired);
+
+        if ($retired) {
+            Log::channel('cms')->info('Retired content that predates WordPress.', $retired);
+        }
+
+        return $retired;
     }
 
     /**

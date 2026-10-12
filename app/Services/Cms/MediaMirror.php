@@ -21,9 +21,16 @@ use Illuminate\Support\Facades\Storage;
  */
 class MediaMirror
 {
+    private readonly MediaVault $vault;
+
     public function __construct(
         private readonly array $config,
-    ) {}
+        ?MediaVault $vault = null,
+    ) {
+        // Database copies for hosts whose disk is wiped on restart; inert
+        // unless `persist` is switched on.
+        $this->vault = $vault ?? new MediaVault((bool) ($config['persist'] ?? false));
+    }
 
     public static function fromConfig(): self
     {
@@ -186,7 +193,10 @@ class MediaMirror
 
         $target = $this->pathFor($directory, $url, $attachment['filename'] ?? null);
 
-        if (Storage::disk($disk)->exists($target)) {
+        // Already here — or it was, before the host wiped its disk, in which
+        // case the database copy is put back instead of downloading again.
+        if (Storage::disk($disk)->exists($target) || $this->vault->restore($disk, $target)) {
+            $this->vault->keepExisting($disk, $target, $mime ?: null);
             $this->remember($disk, $target, $attachment['id'] ?? null);
 
             return $target;
@@ -220,6 +230,7 @@ class MediaMirror
             }
 
             Storage::disk($disk)->put($target, $body);
+            $this->vault->keep($disk, $target, $body, $mime ?: null);
 
             $this->remember($disk, $target, $attachment['id'] ?? null);
 

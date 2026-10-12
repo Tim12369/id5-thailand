@@ -32,6 +32,7 @@ class WebhookController extends Controller
         'menus.updated',
         'texts.updated',
         'terms.updated',
+        'site.sync',
     ];
 
     public function __invoke(Request $request): JsonResponse

@@ -76,6 +76,19 @@ class SyncCmsChange implements ShouldQueue
 
                 return $sync->syncAll(self::TYPES_BY_TAXONOMY[$this->postType] ?? []);
             }),
+            // "Send everything again", asked for from the WordPress dashboard:
+            // the full reconcile, for a host with no scheduler or command line.
+            $this->event === 'site.sync' => $this->wrap(function () use ($sync) {
+                // Far longer than a page load, and nobody is waiting on it.
+                @set_time_limit(900);
+                ignore_user_abort(true);
+
+                $summary = $sync->syncAll();
+
+                if (config('cms.sync.retire_unmanaged')) {
+                    $sync->retireUnmanaged($summary);
+                }
+            }),
             default => null,
         };
     }

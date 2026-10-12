@@ -20,6 +20,7 @@ class ID5_Admin {
 		add_action( 'init', array( __CLASS__, 'register_menus' ) );
 		add_action( 'admin_menu', array( __CLASS__, 'add_settings_page' ) );
 		add_action( 'admin_init', array( __CLASS__, 'register_settings' ) );
+		add_action( 'admin_post_id5_sync_all', array( __CLASS__, 'sync_all' ) );
 		add_action( 'admin_bar_menu', array( __CLASS__, 'fix_view_site_link' ), 100 );
 		add_action( 'admin_menu', array( __CLASS__, 'hide_irrelevant_menus' ), 999 );
 		add_action( 'current_screen', array( __CLASS__, 'close_irrelevant_screens' ) );
@@ -104,6 +105,24 @@ class ID5_Admin {
 		register_setting( self::OPTION_GROUP, 'id5_webhook_secret', array( 'sanitize_callback' => 'sanitize_text_field', 'default' => '' ) );
 	}
 
+	/**
+	 * "Send everything to the website again": the full reconcile, on request.
+	 */
+	public static function sync_all() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( 'ไม่ได้รับอนุญาต', 403 );
+		}
+
+		check_admin_referer( 'id5_sync_all' );
+
+		$result = ID5_Webhook::request_full_sync();
+
+		set_transient( 'id5_sync_all_result', true === $result ? 'ok' : (string) $result, 120 );
+
+		wp_safe_redirect( admin_url( 'options-general.php?page=id5-cms' ) );
+		exit;
+	}
+
 	public static function render_settings_page() {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( esc_html( 'คุณไม่มีสิทธิ์เข้าถึงหน้านี้' ) );
@@ -178,6 +197,33 @@ class ID5_Admin {
 					</tr>
 				</tbody>
 			</table>
+
+			<h2>ส่งเนื้อหาทั้งหมดไปยังเว็บไซต์อีกครั้ง</h2>
+			<p style="max-width:640px">
+				ปกติเว็บไซต์จะอัปเดตเองทุกครั้งที่กดเผยแพร่ ใช้ปุ่มนี้เมื่อเชื่อมต่อเว็บไซต์เป็นครั้งแรก
+				หรือเมื่อสงสัยว่าเว็บไซต์แสดงข้อมูลไม่ตรงกับที่นี่ เว็บไซต์จะดึงเนื้อหา รูปภาพ เมนู และข้อความทั้งหมดใหม่
+				(ใช้เวลาประมาณ 1–3 นาที และไม่กระทบสิ่งที่ท่านกำลังแก้ไข)
+			</p>
+			<?php
+			$sync_result = get_transient( 'id5_sync_all_result' );
+
+			if ( false !== $sync_result ) {
+				delete_transient( 'id5_sync_all_result' );
+
+				printf(
+					'<div class="notice notice-%s inline" style="max-width:640px"><p>%s</p></div>',
+					'ok' === $sync_result ? 'success' : 'error',
+					'ok' === $sync_result
+						? 'เว็บไซต์รับคำขอแล้ว และกำลังดึงเนื้อหาทั้งหมดใหม่ กรุณารอ 1–3 นาทีแล้วเปิดเว็บไซต์ดู'
+						: 'ส่งคำขอไม่สำเร็จ: ' . esc_html( $sync_result ) . ' — หากเว็บไซต์เพิ่งถูกปลุกจากโหมดพัก กรุณารอ 1 นาทีแล้วลองอีกครั้ง'
+				);
+			}
+			?>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<input type="hidden" name="action" value="id5_sync_all">
+				<?php wp_nonce_field( 'id5_sync_all' ); ?>
+				<?php submit_button( 'ส่งเนื้อหาทั้งหมดอีกครั้ง', 'secondary', 'submit', false ); ?>
+			</form>
 		</div>
 		<?php
 	}

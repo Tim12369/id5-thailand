@@ -154,12 +154,20 @@ class ID5_Webhook {
 	 * @param array $payload Event description.
 	 * @param int   $attempt Zero-based attempt counter.
 	 */
-	public static function deliver( $payload, $attempt = 0 ) {
+	/**
+	 * Sign a notification and send it to the website.
+	 *
+	 * @param array $payload The event.
+	 * @param int   $timeout Seconds to wait for the website's reply.
+	 * @return true|string|null True when accepted, the reason when not, null
+	 *                          when the connection has not been set up.
+	 */
+	private static function post( array $payload, $timeout ) {
 		$url    = get_option( 'id5_webhook_url' );
 		$secret = get_option( 'id5_webhook_secret' );
 
 		if ( ! $url || ! $secret ) {
-			return;
+			return null;
 		}
 
 		$payload['site']       = home_url();
@@ -173,7 +181,7 @@ class ID5_Webhook {
 		$response = wp_remote_post(
 			$url,
 			array(
-				'timeout'  => 10,
+				'timeout'  => $timeout,
 				'blocking' => true,
 				'headers'  => array(
 					'Content-Type'    => 'application/json; charset=utf-8',
@@ -189,10 +197,33 @@ class ID5_Webhook {
 
 		if ( $code >= 200 && $code < 300 ) {
 			update_option( 'id5_webhook_last_ok', time(), false );
-			return;
+
+			return true;
 		}
 
-		$reason = is_wp_error( $response ) ? $response->get_error_message() : 'HTTP ' . $code;
+		return is_wp_error( $response ) ? $response->get_error_message() : 'HTTP ' . $code;
+	}
+
+	/**
+	 * Ask the website to fetch everything again, now, and say how it went.
+	 *
+	 * Waits longer than an ordinary notification: on a host that puts idle
+	 * services to sleep, the website may need a minute to wake up first.
+	 *
+	 * @return true|string True when the website accepted the request.
+	 */
+	public static function request_full_sync() {
+		$result = self::post( array( 'event' => 'site.sync' ), 90 );
+
+		return null === $result ? 'ยังไม่ได้ตั้งค่าการเชื่อมต่อกับเว็บไซต์' : $result;
+	}
+
+	public static function deliver( $payload, $attempt = 0 ) {
+		$reason = self::post( $payload, 10 );
+
+		if ( null === $reason || true === $reason ) {
+			return;
+		}
 
 		update_option(
 			'id5_webhook_last_error',

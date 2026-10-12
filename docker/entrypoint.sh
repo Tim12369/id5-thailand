@@ -13,4 +13,8 @@ php artisan route:cache
 php artisan view:cache
 php artisan storage:link || true
 
+# This host's disk is wiped on every restart: put back the pictures mirrored
+# from WordPress from their database copies (a no-op unless CMS_MEDIA_PERSIST).
+php artisan cms:media:restore || true
+
 exec apache2-foreground

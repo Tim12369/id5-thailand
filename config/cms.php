@@ -78,6 +78,12 @@ return [
 
     'sync' => [
         'mode' => env('CMS_SYNC_MODE', 'after_response'),
+
+        // For a database that was filled separately from WordPress (seed
+        // data): after a full pull, retire the news, FAQs, people and ITA
+        // topics that no WordPress item owns, so the old copies do not sit
+        // next to the WordPress ones. See CmsSyncService::retireUnmanaged().
+        'retire_unmanaged' => (bool) env('CMS_RETIRE_UNMANAGED', false),
     ],
 
     /*
@@ -98,6 +104,10 @@ return [
         'private_disk'    => env('CMS_MEDIA_PRIVATE_DISK', 'local'),
         'private_directory' => 'cms-private',
         'max_bytes'       => (int) env('CMS_MEDIA_MAX_BYTES', 26214400), // 25 MB
+        // Also keep each mirrored file in the database, and put the files back
+        // when the service starts (`cms:media:restore`). For hosts whose disk
+        // does not survive a restart, such as Render's free plan.
+        'persist'         => (bool) env('CMS_MEDIA_PERSIST', false),
         'allowed_mime'    => [
             'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml',
             'application/pdf',

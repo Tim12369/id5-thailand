@@ -22,7 +22,8 @@ class CmsPull extends Command
         {--type=* : Limit to these WordPress post types (repeatable)}
         {--settings : Pull only the site-wide settings}
         {--menus : Pull only the navigation menus}
-        {--texts : Pull only the wording (menu labels, headings, buttons)}';
+        {--texts : Pull only the wording (menu labels, headings, buttons)}
+        {--retire-unmanaged : After a full pull, retire news, FAQs, people and ITA topics that no WordPress item owns (a database seeded separately)}';
 
     protected $description = 'Pull content from WordPress into the website database';
 
@@ -83,6 +84,12 @@ class CmsPull extends Command
         );
 
         $failed = collect($summary)->sum('failed');
+
+        if (! $types && ($this->option('retire-unmanaged') || config('cms.sync.retire_unmanaged'))) {
+            foreach ($sync->retireUnmanaged($summary) as $kind => $count) {
+                $this->components->twoColumnDetail("Retired (predates WordPress): {$kind}", (string) $count);
+            }
+        }
 
         if ($failed > 0) {
             $this->components->warn("{$failed} item(s) could not be synced — see storage/logs/cms.log.");
