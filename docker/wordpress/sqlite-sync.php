@@ -23,6 +23,18 @@ if ( 'cli' !== PHP_SAPI ) {
 	exit( 1 );
 }
 
+// However this was started, it runs as the web server's user and must look
+// for that user's files. Left pointing at root's home, the database client
+// tries to read root's TLS certificate, is refused, and gives up on the
+// connection — on a database that requires encryption, every save then fails.
+if ( function_exists( 'posix_getpwuid' ) ) {
+	$id5_user = posix_getpwuid( posix_geteuid() );
+
+	if ( ! empty( $id5_user['dir'] ) ) {
+		putenv( 'HOME=' . $id5_user['dir'] );
+	}
+}
+
 const ID5_DB    = '/var/www/wordpress-data/site.sqlite';
 const ID5_STATE = '/var/www/wordpress-data/.sync-state';
 const ID5_OWNER = '/var/www/wordpress-data/.instance';

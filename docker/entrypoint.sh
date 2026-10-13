@@ -39,7 +39,9 @@ php artisan view:cache
 php artisan storage:link || true
 
 # ── WordPress: bring its database back, then start it ───────────────────────
-as_www() { runuser -u www-data -- "$@"; }
+# With that user's own home: the database client looks there for certificates,
+# and must not be sent to root's, which it may not read.
+as_www() { HOME=/var/www runuser -u www-data -- "$@"; }
 
 # The commands above ran as root; the web server must own what they made.
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
@@ -71,7 +73,7 @@ if [ "$restored" = "0" ] || [ "$restored" = "3" ]; then
             set +e   # a failing run must lead to the next one, not end the loop
             trap '' TERM INT WINCH
             while [ ! -f "$DATA/.stopping" ]; do
-                setpriv --reuid=www-data --regid=www-data --init-groups php /usr/local/share/id5/sqlite-sync.php daemon
+                HOME=/var/www setpriv --reuid=www-data --regid=www-data --init-groups php /usr/local/share/id5/sqlite-sync.php daemon
                 code=$?
                 { [ "$code" = "9" ] || [ -f "$DATA/.stopping" ]; } && break
                 echo "[id5] the saving process stopped (exit $code); starting it again"
