@@ -1,0 +1,11 @@
+# WordPress at /wp (copied to /var/www/wordpress/.htaccess by the Dockerfile).
+<IfModule mod_rewrite.c>
+RewriteEngine On
+# The website signs in to the REST API with an application password.
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+RewriteBase /wp/
+RewriteRule ^index\.php$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /wp/index.php [L]
+</IfModule>

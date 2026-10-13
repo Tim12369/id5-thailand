@@ -28,32 +28,11 @@ services:
         value: database
       - key: CACHE_STORE
         value: database
-      # The free plan's disk is wiped on every restart, so pictures copied from
-      # WordPress are also kept in the database and restored at start-up.
-      - key: CMS_MEDIA_PERSIST
-        value: "true"
       # Set these in the Render dashboard (Environment tab), not here:
       # APP_KEY, APP_URL, DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD,
       # LINE_CHANNEL_ID, LINE_CHANNEL_SECRET, LINE_CHANNEL_ACCESS_TOKEN,
       # GOOGLE_MAPS_API_KEY, GROQ_API_KEY
-      # and, to connect the WordPress service below (docs/free-hosting.md):
-      # CMS_ENABLED, CMS_WORDPRESS_URL, CMS_WORDPRESS_USER,
-      # CMS_WORDPRESS_APP_PASSWORD, CMS_WEBHOOK_SECRET
-
-  # The editors' WordPress (docs/free-hosting.md). Its content, and its
-  # uploaded files, live in an external MySQL-compatible database (TiDB
-  # Cloud's free plan): this plan has no lasting disk.
-  - type: web
-    name: id5-cms
-    runtime: docker
-    plan: free
-    dockerfilePath: ./wordpress/Dockerfile
-    dockerContext: ./wordpress
-    envVars:
-      - key: WORDPRESS_DB_NAME
-        value: id5_wordpress
-      - key: ID5_PUBLIC_SITE_URL
-        value: https://id5-thailand.onrender.com
-      # Set these in the Render dashboard (Environment tab), not here:
-      # WORDPRESS_DB_HOST (host:port), WORDPRESS_DB_USER, WORDPRESS_DB_PASSWORD,
-      # ID5_WP_SECRET, ID5_WEBHOOK_SECRET
+      #
+      # The editors' WordPress runs in this same service, at /wp, and needs no
+      # settings of its own: docker/entrypoint.sh derives them from APP_URL and
+      # APP_KEY. See docs/free-hosting.md.

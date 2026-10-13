@@ -1,0 +1,135 @@
+{
+    "made_at": "2026-10-13T06:30:33+00:00",
+    "wordpress": "7.1.3",
+    "wp_url": "http://127.0.0.1:8081",
+    "site_url": "http://127.0.0.1:8000",
+    "tables": {
+        "posts": {
+            "columns": [
+                "ID",
+                "post_author",
+                "post_date",
+                "post_date_gmt",
+                "post_content",
+                "post_title",
+                "post_excerpt",
+                "post_status",
+                "comment_status",
+                "ping_status",
+                "post_password",
+                "post_name",
+                "to_ping",
+                "pinged",
+                "post_modified",
+                "post_modified_gmt",
+                "post_content_filtered",
+                "post_parent",
+                "guid",
+                "menu_order",
+                "post_type",
+                "post_mime_type",
+                "comment_count"
+            ],
+            "rows": 270
+        },
+        "postmeta": {
+            "columns": [
+                "meta_id",
+                "post_id",
+                "meta_key",
+                "meta_value"
+            ],
+            "rows": 2680
+        },
+        "terms": {
+            "columns": [
+                "term_id",
+                "name",
+                "slug",
+                "term_group"
+            ],
+            "rows": 105
+        },
+        "termmeta": {
+            "columns": [
+                "meta_id",
+                "term_id",
+                "meta_key",
+                "meta_value"
+            ],
+            "rows": 56
+        },
+        "term_taxonomy": {
+            "columns": [
+                "term_taxonomy_id",
+                "term_id",
+                "taxonomy",
+                "description",
+                "parent",
+                "count"
+            ],
+            "rows": 105
+        },
+        "term_relationships": {
+            "columns": [
+                "object_id",
+                "term_taxonomy_id",
+                "term_order"
+            ],
+            "rows": 307
+        },
+        "id5_texts": {
+            "columns": [],
+            "rows": 0
+        },
+        "comments": {
+            "columns": [],
+            "rows": 0
+        },
+        "commentmeta": {
+            "columns": [],
+            "rows": 0
+        },
+        "links": {
+            "columns": [],
+            "rows": 0
+        },
+        "users": {
+            "columns": [
+                "ID",
+                "user_login",
+                "user_pass",
+                "user_nicename",
+                "user_email",
+                "user_url",
+                "user_registered",
+                "user_activation_key",
+                "user_status",
+                "display_name"
+            ],
+            "rows": 3
+        },
+        "usermeta": {
+            "columns": [
+                "umeta_id",
+                "user_id",
+                "meta_key",
+                "meta_value"
+            ],
+            "rows": 39
+        },
+        "options": {
+            "columns": [
+                "option_id",
+                "option_name",
+                "option_value",
+                "autoload"
+            ],
+            "rows": 66
+        }
+    },
+    "uploads": [
+        "2026/10/TM30.pdf",
+        "2026/10/z3RLseecyv1qccC72j1VaH8ExdAkOlM0f3Ez2hAH.jpg"
+    ]
+}

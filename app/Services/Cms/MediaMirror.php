@@ -207,7 +207,8 @@ class MediaMirror
                 ->connectTimeout(config('cms.connect_timeout'))
                 ->withOptions(['verify' => config('cms.verify_tls')])
                 ->withUserAgent('ID5-Laravel-CMS-Sync')
-                ->get($url);
+                ->withHeaders(InternalRoute::headers($url))
+                ->get(InternalRoute::url($url));
 
             if ($response->failed()) {
                 Log::channel('cms')->warning('Could not download media from WordPress.', [

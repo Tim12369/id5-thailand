@@ -11,6 +11,10 @@
  * table below, and restore_all() puts back whatever is missing. The container's
  * start-up script calls it before the web server starts.
  *
+ * The table normally lives in WordPress's own database. Where that database
+ * is itself a file on the vanishing disk (SQLite), ID5_FILES_PG names a
+ * PostgreSQL database to keep the files in instead.
+ *
  * Without the constant (an ordinary host with a lasting disk) nothing here is
  * hooked and the table is never created.
  *
@@ -58,7 +62,69 @@ class ID5_Uploads_Store {
 		return $wpdb->prefix . 'id5_files';
 	}
 
+	/**
+	 * The PostgreSQL database the files are kept in, when one is configured:
+	 * array( 'dsn' => …, 'user' => …, 'password' => … ) in ID5_FILES_PG.
+	 *
+	 * @return PDO|null
+	 */
+	private static function pg() {
+		static $pdo = false;
+
+		if ( false !== $pdo ) {
+			return $pdo;
+		}
+
+		$pdo = null;
+
+		if ( self::external() && class_exists( 'PDO' ) ) {
+			try {
+				$pdo = new PDO(
+					ID5_FILES_PG['dsn'],
+					ID5_FILES_PG['user'],
+					ID5_FILES_PG['password'],
+					// Emulated: a pooled connection cannot keep server-side statements.
+					array(
+						PDO::ATTR_ERRMODE          => PDO::ERRMODE_EXCEPTION,
+						PDO::ATTR_EMULATE_PREPARES => true,
+						PDO::ATTR_TIMEOUT          => 20,
+					)
+				);
+
+				$pdo->exec( 'CREATE TABLE IF NOT EXISTS wp_id5_files (path text NOT NULL, seq integer NOT NULL, data bytea NOT NULL, PRIMARY KEY (path, seq))' );
+			} catch ( Exception $e ) {
+				error_log( 'ID5 uploads store: ' . $e->getMessage() ); // phpcs:ignore
+				$pdo = null;
+			}
+		}
+
+		return $pdo;
+	}
+
+	private static function external() {
+		return defined( 'ID5_FILES_PG' ) && is_array( ID5_FILES_PG );
+	}
+
+	/** How many files are stored. */
+	public static function count() {
+		global $wpdb;
+
+		try {
+			if ( self::external() ) {
+				return self::pg() ? (int) self::pg()->query( 'SELECT COUNT(DISTINCT path) FROM wp_id5_files' )->fetchColumn() : 0;
+			}
+
+			return (int) $wpdb->get_var( 'SELECT COUNT(DISTINCT path) FROM ' . self::table() ); // phpcs:ignore
+		} catch ( Exception $e ) {
+			return 0;
+		}
+	}
+
 	public static function install() {
+		if ( self::external() ) {
+			return; // the PostgreSQL table is made on first use
+		}
+
 		if ( get_option( 'id5_uploads_store_db' ) === self::VERSION ) {
 			return;
 		}
@@ -141,6 +207,10 @@ class ID5_Uploads_Store {
 	public static function keep( $relative, $absolute ) {
 		global $wpdb;
 
+		if ( self::external() ) {
+			return self::keep_external( $relative, $absolute );
+		}
+
 		$handle = fopen( $absolute, 'rb' ); // phpcs:ignore WordPress.WP.AlternativeFunctions
 
 		if ( ! $handle ) {
@@ -183,8 +253,109 @@ class ID5_Uploads_Store {
 		global $wpdb;
 
 		foreach ( self::files_of( $attachment_id ) as $relative ) {
+			if ( self::external() ) {
+				try {
+					if ( self::pg() ) {
+						self::pg()->prepare( 'DELETE FROM wp_id5_files WHERE path = ?' )->execute( array( $relative ) );
+					}
+				} catch ( Exception $e ) {
+					error_log( 'ID5 uploads store: ' . $e->getMessage() ); // phpcs:ignore
+				}
+
+				continue;
+			}
+
 			$wpdb->delete( self::table(), array( 'path' => $relative ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		}
+	}
+
+	// ─── The same, kept in PostgreSQL ───────────────────────────────────────
+
+	private static function keep_external( $relative, $absolute ) {
+		$pdo    = self::pg();
+		$handle = $pdo ? fopen( $absolute, 'rb' ) : false; // phpcs:ignore WordPress.WP.AlternativeFunctions
+
+		if ( ! $handle ) {
+			return false;
+		}
+
+		try {
+			$pdo->beginTransaction();
+			$pdo->prepare( 'DELETE FROM wp_id5_files WHERE path = ?' )->execute( array( $relative ) );
+
+			$insert = $pdo->prepare( "INSERT INTO wp_id5_files (path, seq, data) VALUES (?, ?, decode(?, 'base64'))" );
+
+			for ( $seq = 0; ! feof( $handle ); $seq++ ) {
+				$chunk = fread( $handle, self::CHUNK ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+
+				if ( false === $chunk || ( '' === $chunk && $seq > 0 ) ) {
+					break;
+				}
+
+				$insert->execute( array( $relative, $seq, base64_encode( $chunk ) ) ); // phpcs:ignore
+			}
+
+			$pdo->commit();
+			fclose( $handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+
+			return true;
+		} catch ( Exception $e ) {
+			if ( $pdo->inTransaction() ) {
+				$pdo->rollBack();
+			}
+
+			fclose( $handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+			error_log( 'ID5 uploads store: ' . $e->getMessage() ); // phpcs:ignore
+
+			return false;
+		}
+	}
+
+	private static function restore_all_external() {
+		$count = array( 'restored' => 0, 'present' => 0, 'failed' => 0 );
+		$pdo   = self::pg();
+
+		if ( ! $pdo ) {
+			return $count;
+		}
+
+		$base   = trailingslashit( wp_get_upload_dir()['basedir'] );
+		$chunks = $pdo->prepare( "SELECT encode(data, 'base64') FROM wp_id5_files WHERE path = ? AND seq = ?" );
+		$total  = $pdo->prepare( 'SELECT COUNT(*) FROM wp_id5_files WHERE path = ?' );
+
+		foreach ( $pdo->query( 'SELECT DISTINCT path FROM wp_id5_files ORDER BY path' )->fetchAll( PDO::FETCH_COLUMN ) as $relative ) {
+			// Nothing is ever written outside the uploads folder, nor anything
+			// the web server could run, whatever a row says.
+			if ( '' === $relative || false !== strpos( $relative, '..' ) || '/' === $relative[0] || preg_match( '/\.(php\d?|phtml|phar)$/i', $relative ) ) {
+				++$count['failed'];
+				continue;
+			}
+
+			if ( is_file( $base . $relative ) ) {
+				++$count['present'];
+				continue;
+			}
+
+			if ( ! wp_mkdir_p( dirname( $base . $relative ) ) ) {
+				++$count['failed'];
+				continue;
+			}
+
+			$total->execute( array( $relative ) );
+
+			$handle = fopen( $base . $relative . '.part', 'wb' ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+
+			for ( $seq = 0, $n = (int) $total->fetchColumn(); $seq < $n; $seq++ ) {
+				$chunks->execute( array( $relative, $seq ) );
+				fwrite( $handle, base64_decode( (string) $chunks->fetchColumn() ) ); // phpcs:ignore
+			}
+
+			fclose( $handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+
+			++$count[ rename( $base . $relative . '.part', $base . $relative ) ? 'restored' : 'failed' ]; // phpcs:ignore
+		}
+
+		return $count;
 	}
 
 	// ─── Restoring ──────────────────────────────────────────────────────────
@@ -196,6 +367,16 @@ class ID5_Uploads_Store {
 	 */
 	public static function restore_all() {
 		global $wpdb;
+
+		if ( self::external() ) {
+			try {
+				return self::restore_all_external();
+			} catch ( Exception $e ) {
+				error_log( 'ID5 uploads store: ' . $e->getMessage() ); // phpcs:ignore
+
+				return array( 'restored' => 0, 'present' => 0, 'failed' => 1 );
+			}
+		}
 
 		$count = array( 'restored' => 0, 'present' => 0, 'failed' => 0 );
 		$table = self::table();

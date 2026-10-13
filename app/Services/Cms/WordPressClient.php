@@ -189,7 +189,7 @@ class WordPressClient
 
     private function url(string $path): string
     {
-        return $this->config['base_url'].$path;
+        return InternalRoute::url($this->config['base_url'].$path);
     }
 
     private function getJson(string $path, array $query = []): array
@@ -216,7 +216,7 @@ class WordPressClient
             (string) $this->config['auth']['username'],
             (string) $this->config['auth']['password'],
         )
-            ->withHeaders(['Accept' => 'application/json'])
+            ->withHeaders(['Accept' => 'application/json'] + InternalRoute::headers($this->config['base_url']))
             ->withUserAgent('ID5-Laravel-CMS-Sync')
             ->withOptions(['verify' => $this->config['verify_tls']])
             ->connectTimeout($this->config['connect_timeout'])

@@ -22,6 +22,11 @@ return [
 
     'base_url' => rtrim((string) env('CMS_WORDPRESS_URL', ''), '/'),
 
+    // Only where WordPress runs in the same container as this application:
+    // the local address to send requests to instead of the public one above
+    // (see App\Services\Cms\InternalRoute).
+    'internal_url' => rtrim((string) env('CMS_INTERNAL_URL', ''), '/'),
+
     'auth' => [
         'username' => env('CMS_WORDPRESS_USER'),
         'password' => env('CMS_WORDPRESS_APP_PASSWORD'),
