@@ -402,7 +402,7 @@ function aiWidget(initialPersona, locale, csrfToken) {
 
         async init() {
             // Auto-start conversation and load suggestions
-            await this.startConversation();
+            {!! \App\Support\CmsEdit::active() ? "if (window.self !== window.top) { return; } /* the editor's preview frame: a browser withholds this site's cookies there */ " : '' !!}await this.startConversation();
         },
 
         async startConversation() {

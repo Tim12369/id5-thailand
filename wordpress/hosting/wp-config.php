@@ -42,7 +42,13 @@ define( 'DB_USER', $id5_env( 'WORDPRESS_DB_USER' ) );
 define( 'DB_PASSWORD', $id5_env( 'WORDPRESS_DB_PASSWORD' ) );
 define( 'DB_HOST', $id5_env( 'WORDPRESS_DB_HOST', 'localhost' ) ); // host:port
 define( 'DB_CHARSET', 'utf8mb4' );
-define( 'DB_COLLATE', '' );
+
+// TiDB (TiDB Cloud's free plan, port 4000) has no utf8mb4_unicode_520_ci, the
+// collation WordPress would pick by itself; name one it does have. On MySQL
+// and MariaDB the choice is left to WordPress.
+$id5_tidb = false !== strpos( DB_HOST, 'tidbcloud' ) || (bool) preg_match( '/:4000$/', DB_HOST );
+
+define( 'DB_COLLATE', $id5_env( 'WORDPRESS_DB_COLLATE', $id5_tidb ? 'utf8mb4_general_ci' : '' ) );
 
 // Managed databases are reached over the internet and require TLS.
 if ( 'off' !== $id5_env( 'WORDPRESS_DB_SSL', 'on' ) ) {

@@ -8,7 +8,7 @@ online next to it, also for free, so editors can log in from anywhere.
 | Public website (Laravel) | Render free web service — already running | free |
 | Website database | Neon PostgreSQL — already running | free |
 | **WordPress** | a second Render free web service, built from `wordpress/Dockerfile` | free |
-| **WordPress database** | Aiven for MySQL, free plan (1 GB) | free, no card |
+| **WordPress database** | TiDB Cloud, Starter plan (MySQL-compatible, 5 GB) | free, no card, no time limit |
 
 ## How it copes with a free plan
 
@@ -16,7 +16,7 @@ Render's free services have **no lasting disk**: every file written is lost when
 the service restarts, redeploys, or sleeps after 15 idle minutes. Databases are
 the only thing that lasts, so everything that must survive lives in one:
 
-* **WordPress uploads** are also stored in the MySQL database (table
+* **WordPress uploads** are also stored in WordPress's own database (table
   `wp_id5_files`, by the plugin's `ID5_Uploads_Store`) and written back to disk
   each time the service starts.
 * **Pictures the website copies from WordPress** are also stored in PostgreSQL
@@ -31,12 +31,20 @@ the only thing that lasts, so everything that must survive lives in one:
 
 ## Setting it up
 
-### 1. Create the MySQL database (Aiven)
+### 1. Create the WordPress database (TiDB Cloud)
 
-1. Sign up at <https://aiven.io> (no credit card).
-2. **Create service → MySQL → Free plan**, any region. Wait until it says *Running*.
-3. On the service's **Overview** page, note the **Host**, **Port**, **User**
-   (`avnadmin`), **Password** and **Database name** (`defaultdb`).
+TiDB Cloud's **Starter** plan is free without a time limit: each month it
+includes 5 GB of storage and 50 million request units, far more than an editing
+site uses. It speaks the MySQL protocol, which is what WordPress needs. It also
+pauses by itself when idle and wakes on the next connection, so nothing has to
+be switched back on by hand.
+
+1. Sign up at <https://tidbcloud.com> (Google, GitHub or e-mail; no credit card).
+2. Create a cluster: plan **Starter**, any name, a region near Thailand
+   (**Singapore**). It is ready in under a minute.
+3. Open the cluster → **Connect** → Connection Type **Public** → **Generate
+   Password**. Note the **HOST**, **PORT** (`4000`), **USERNAME** (it looks like
+   `2aBcDeFgHiJ.root`) and **PASSWORD**. The password is shown only once.
 
 ### 2. Create the WordPress service (Render)
 
@@ -47,10 +55,10 @@ the only thing that lasts, so everything that must survive lives in one:
 
 | Variable | Value |
 |---|---|
-| `WORDPRESS_DB_HOST` | Aiven host and port joined by a colon, e.g. `mysql-abc.aivencloud.com:12345` |
-| `WORDPRESS_DB_USER` | `avnadmin` |
-| `WORDPRESS_DB_PASSWORD` | the Aiven password |
-| `WORDPRESS_DB_NAME` | `defaultdb` |
+| `WORDPRESS_DB_HOST` | the TiDB host and port joined by a colon, e.g. `gateway01.ap-southeast-1.prod.aws.tidbcloud.com:4000` |
+| `WORDPRESS_DB_USER` | the TiDB username, e.g. `2aBcDeFgHiJ.root` |
+| `WORDPRESS_DB_PASSWORD` | the TiDB password |
+| `WORDPRESS_DB_NAME` | `id5_wordpress` (step 3 creates it) |
 | `ID5_WP_SECRET` | a long random value (64 characters); never change it afterwards |
 | `ID5_PUBLIC_SITE_URL` | `https://id5-thailand.onrender.com` |
 | `ID5_WEBHOOK_SECRET` | a second long random value, shared with the website (step 4) |
@@ -66,7 +74,7 @@ On the computer that has the local WordPress, with its database running:
 ```
 php wordpress/hosting/tools/send-site.php ^
     --from=C:/xampp/htdocs/id5-wordpress ^
-    --to="mysql://avnadmin:PASSWORD@HOST:PORT/defaultdb" ^
+    --to="mysql://USERNAME:PASSWORD@HOST:4000/id5_wordpress" ^
     --wp-url=https://id5-cms.onrender.com ^
     --site-url=https://id5-thailand.onrender.com ^
     --credentials=C:/xampp/id5-hosting-passwords.txt
@@ -126,15 +134,32 @@ again" for any later doubt — this host has no scheduler to do it hourly.
   but do not point an uptime monitor at either address, and watch
   **Billing → Usage** if traffic grows. Creating the WordPress service in a
   separate Render workspace gives it its own 750 hours.
-* **Space.** The MySQL database holds 1 GB, including every uploaded picture in
-  the sizes WordPress keeps (a typical photo takes 0.3–1.5 MB). PostgreSQL on
+* **Space.** The WordPress database holds 5 GB, including every uploaded picture
+  in the sizes WordPress keeps (a typical photo takes 0.3–1.5 MB). PostgreSQL on
   Neon's free plan holds 0.5 GB, including the website's copies of the pictures
   it shows. Photos larger than 1920 px are scaled down on upload. Deleting a
   picture in the Media Library frees its space.
 * **Uploads up to 16 MB** per file.
-* **Idle database.** Aiven may power off a free service that goes unused for a
-  long time, after an e-mail warning; it can be powered on again from its
-  console and nothing is lost.
+* **Idle database.** TiDB Cloud pauses an idle cluster and wakes it on the next
+  connection by itself; the first page after a long pause takes a few seconds
+  longer. If a month's free quota were ever used up, the database would refuse
+  new connections until the next month begins — an editing site uses a small
+  fraction of it.
+
+### Why TiDB and not plain MySQL
+
+No provider offers a free MySQL server with enough room and no strings; TiDB's
+free plan is the generous one. Two small differences from MySQL are handled in
+this repository, so nothing needs doing by hand:
+
+* it has no `utf8mb4_unicode_520_ci` collation — `wp-config.php` selects
+  `utf8mb4_general_ci` when the database host is a TiDB one, and the copy tool
+  rewrites it in the table definitions;
+* it refuses `SQL_CALC_FOUND_ROWS`, which WordPress still uses to count the
+  rows of every paginated list — `hosting/mu-plugins/id5-tidb.php` answers the
+  count with an ordinary `COUNT(*)` instead.
+
+The same image runs unchanged on real MySQL or MariaDB.
 
 ## Changing it later
 

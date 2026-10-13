@@ -133,8 +133,20 @@ mysqli_report( MYSQLI_REPORT_OFF );
 $dst = mysqli_init();
 $dst->options( MYSQLI_OPT_CONNECT_TIMEOUT, 20 );
 
-if ( ! @$dst->real_connect( $to['host'], rawurldecode( $to['user'] ), rawurldecode( $to['pass'] ?? '' ), ltrim( $to['path'], '/' ), (int) ( $to['port'] ?? 3306 ), null, isset( $opt['no-ssl'] ) ? 0 : MYSQLI_CLIENT_SSL ) ) {
+$database = str_replace( '`', '', ltrim( $to['path'], '/' ) );
+
+// Connect to the server first, so a database that does not exist yet can be made.
+if ( ! @$dst->real_connect( $to['host'], rawurldecode( $to['user'] ), rawurldecode( $to['pass'] ?? '' ), null, (int) ( $to['port'] ?? 3306 ), null, isset( $opt['no-ssl'] ) ? 0 : MYSQLI_CLIENT_SSL ) ) {
 	$fail( 'Could not connect to the destination database: ' . mysqli_connect_error() );
+}
+
+// TiDB speaks MySQL with a few differences, handled below.
+$tidb = false !== stripos( (string) $dst->server_info, 'tidb' );
+
+$dst->query( "CREATE DATABASE IF NOT EXISTS `{$database}`" );
+
+if ( ! $dst->select_db( $database ) ) {
+	$fail( "Could not open the database {$database}: " . $dst->error );
 }
 
 $run = static function ( $sql ) use ( $dst, $fail ) {
@@ -178,6 +190,16 @@ foreach ( $tables as $table ) {
 	$ddl = preg_replace( '/\bcurrent_timestamp\(\)/i', 'CURRENT_TIMESTAMP', $ddl );
 	$ddl = preg_replace( '/\s+PAGE_CHECKSUM=\d+|\s+TRANSACTIONAL=\d+|\s+ROW_FORMAT=PAGE/i', '', $ddl );
 	$ddl = preg_replace( '/ENGINE=(Aria|MyISAM)/i', 'ENGINE=InnoDB', $ddl );
+
+	if ( $tidb ) {
+		// No utf8mb4_unicode_520_ci there; and without AUTO_ID_CACHE=1 TiDB hands
+		// out numbers in blocks, so a new post's ID would leap by thousands.
+		$ddl = str_replace( array( 'utf8mb4_unicode_520_ci', 'utf8_unicode_520_ci' ), array( 'utf8mb4_general_ci', 'utf8_general_ci' ), $ddl );
+
+		if ( false !== stripos( $ddl, 'AUTO_INCREMENT' ) ) {
+			$ddl .= ' AUTO_ID_CACHE=1';
+		}
+	}
 
 	$run( $ddl );
 
@@ -261,7 +283,7 @@ $run(
 		data longblob NOT NULL,
 		PRIMARY KEY (id),
 		UNIQUE KEY path_seq (path, seq)
-	) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci"
+	) DEFAULT CHARSET=utf8mb4 COLLATE=" . ( $tidb ? 'utf8mb4_general_ci AUTO_ID_CACHE=1' : 'utf8mb4_unicode_520_ci' )
 );
 $set_option( 'id5_uploads_store_db', '1' );
 
@@ -312,6 +334,7 @@ $run( 'SET SESSION foreign_key_checks = 1' );
 
 // ── Report ──────────────────────────────────────────────────────────────────
 $say( '' );
+$say( 'Destination: ' . $dst->server_info . ( $tidb ? ' (TiDB)' : '' ) . ", database {$database}" );
 $say( sprintf( 'Copied %d tables, %d rows, and %d uploaded file(s) (%s).', count( $tables ), $total, $sent, size_format( $bytes ) ?: '0 B' ) );
 $say( "Addresses rewritten: {$old_wp} -> {$new_wp}" . ( $old_site ? " ; {$old_site} -> {$new_site}" : '' ) );
 

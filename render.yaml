@@ -41,8 +41,8 @@ services:
       # CMS_WORDPRESS_APP_PASSWORD, CMS_WEBHOOK_SECRET
 
   # The editors' WordPress (docs/free-hosting.md). Its content, and its
-  # uploaded files, live in an external MySQL database: this plan has no
-  # lasting disk.
+  # uploaded files, live in an external MySQL-compatible database (TiDB
+  # Cloud's free plan): this plan has no lasting disk.
   - type: web
     name: id5-cms
     runtime: docker
@@ -51,7 +51,7 @@ services:
     dockerContext: ./wordpress
     envVars:
       - key: WORDPRESS_DB_NAME
-        value: defaultdb
+        value: id5_wordpress
       - key: ID5_PUBLIC_SITE_URL
         value: https://id5-thailand.onrender.com
       # Set these in the Render dashboard (Environment tab), not here:
