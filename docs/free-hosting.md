@@ -45,6 +45,20 @@ Safeguards worth knowing about:
   instance takes ownership of the saved database; the older one notices and
   stops saving, so it cannot overwrite newer data.
 
+### Checking that it is being saved
+
+The host's logs cannot be read from WordPress, so WordPress reports the state
+of its saved copy itself:
+
+* **ตั้งค่า → การเชื่อมต่อเว็บไซต์ ID5** shows the administrator a green or red
+  notice, with when this instance started ("restored generation N" is the
+  normal answer), when it last saved, and the last error if there was one.
+* `GET /wp/wp-json/id5-host/v1/saved` answers anyone with just
+  `{"ok": true, "generation": N, "saved_ago": seconds, …}` — enough to check
+  after a deployment that the site came back **restored**, not re-created.
+
+If the saving process ever dies it is started again automatically.
+
 ## Nothing to configure
 
 `docker/entrypoint.sh` works out everything that connects the two halves:
