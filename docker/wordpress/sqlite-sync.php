@@ -28,6 +28,16 @@ const ID5_STATE = '/var/www/wordpress-data/.sync-state';
 const ID5_OWNER = '/var/www/wordpress-data/.instance';
 const ID5_BLOCK = 65536;
 
+// What happened last, for the status shown to the administrator in WordPress
+// (this host's logs are not something an editor can read).
+const ID5_STATUS = '/var/www/wordpress-data/.sync-status.json';
+
+function id5_status( array $facts ) {
+	$now = is_file( ID5_STATUS ) ? (array) json_decode( (string) file_get_contents( ID5_STATUS ), true ) : array();
+
+	@file_put_contents( ID5_STATUS, json_encode( array_merge( $now, $facts ) ) );
+}
+
 function id5_log( $message ) {
 	fwrite( STDOUT, '[id5-sync] ' . $message . "\n" );
 }
@@ -108,6 +118,7 @@ function id5_restore() {
 
 	if ( ! $meta ) {
 		$pdo->commit();
+		id5_status( array( 'start' => 'nothing was saved yet', 'start_at' => time() ) );
 
 		return false;
 	}
@@ -147,6 +158,7 @@ function id5_restore() {
 
 	file_put_contents( ID5_STATE, json_encode( array( 'hashes' => $hashes, 'generation' => (int) $meta['generation'] ) ) );
 	id5_log( sprintf( 'restored %s in %d blocks (generation %d).', number_format( (int) $meta['size'] ) . ' bytes', count( $hashes ), $meta['generation'] ) );
+	id5_status( array( 'start' => 'restored generation ' . (int) $meta['generation'], 'start_at' => time() ) );
 
 	return true;
 }
@@ -239,6 +251,7 @@ function id5_push() {
 
 	file_put_contents( ID5_STATE, json_encode( array( 'hashes' => array_values( $hashes ), 'generation' => $generation ) ) );
 	id5_log( sprintf( 'saved %d changed block(s) of %d (generation %d).', count( $changed ), count( $hashes ), $generation ) );
+	id5_status( array( 'saved_at' => time(), 'generation' => $generation, 'size' => $size, 'error' => null ) );
 
 	return 'saved';
 }
@@ -266,6 +279,8 @@ try {
 				exit( id5_restore() ? 0 : 3 );
 			} catch ( Throwable $e ) {
 				if ( $attempt >= 8 ) {
+					id5_status( array( 'start' => 'the saved copy could not be read: ' . $e->getMessage(), 'start_at' => time() ) );
+
 					throw $e;
 				}
 
@@ -282,6 +297,8 @@ try {
 
 	if ( 'daemon' === $command ) {
 		$stop = false;
+
+		id5_status( array( 'daemon_pid' => getmypid(), 'daemon_started_at' => time(), 'instance' => id5_instance() ) );
 
 		if ( function_exists( 'pcntl_async_signals' ) ) {
 			pcntl_async_signals( true );
@@ -311,12 +328,16 @@ try {
 
 					if ( 'not-owner' === $result ) {
 						id5_log( 'a newer instance has taken over the saved database; this one stops saving.' );
-						exit( 0 );
+						id5_status( array( 'error' => 'a newer instance has taken over; this one no longer saves', 'error_at' => time() ) );
+						// 9: deliberate, so the start-up script does not start it again.
+						exit( 9 );
 					}
 
 					$saved = $now;
+					id5_status( array( 'checked_at' => time(), 'last' => $result ) );
 				} catch ( Throwable $e ) {
 					id5_log( 'could not save just now (' . $e->getMessage() . '); will try again.' );
+					id5_status( array( 'error' => $e->getMessage(), 'error_at' => time() ) );
 					sleep( 5 );
 				}
 			}

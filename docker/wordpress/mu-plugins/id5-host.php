@@ -95,6 +95,112 @@ add_action(
 	}
 );
 
+// ─── Is the site being saved? ───────────────────────────────────────────────
+// This host wipes its disk at every restart; what survives is the copy kept
+// in PostgreSQL (docker/wordpress/sqlite-sync.php). Nobody can read the host's
+// logs from WordPress, so the state of that copy is reported here.
+
+/**
+ * @return array{local:array,saved:array|null,problem:string|null}
+ */
+function id5_host_save_status() {
+	$file  = dirname( DB_PATH ) . '/.sync-status.json';
+	$local = is_file( $file ) ? (array) json_decode( (string) file_get_contents( $file ), true ) : array();
+	$saved = null;
+	$fault = null;
+
+	try {
+		if ( defined( 'ID5_FILES_PG' ) ) {
+			$pdo   = new PDO( ID5_FILES_PG['dsn'], ID5_FILES_PG['user'], ID5_FILES_PG['password'], array( PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_EMULATE_PREPARES => true, PDO::ATTR_TIMEOUT => 10 ) );
+			$saved = $pdo->query( 'SELECT generation, blocks, size, owner, EXTRACT(EPOCH FROM (now() - updated_at))::int AS age FROM wp_sqlite_meta WHERE id = 1' )->fetch( PDO::FETCH_ASSOC ) ?: null;
+		}
+	} catch ( Exception $e ) {
+		$fault = $e->getMessage();
+	}
+
+	$alive = ! empty( $local['daemon_pid'] ) && is_dir( '/proc/' . (int) $local['daemon_pid'] );
+
+	if ( $fault ) {
+		$problem = 'the saved copy cannot be reached';
+	} elseif ( ! $saved ) {
+		$problem = 'nothing has been saved yet';
+	} elseif ( ! $alive ) {
+		$problem = 'the saving process is not running';
+	} elseif ( ! empty( $local['error'] ) && (int) ( $local['error_at'] ?? 0 ) >= (int) ( $local['saved_at'] ?? 0 ) ) {
+		$problem = 'the last attempt to save failed';
+	} elseif ( ! empty( $local['instance'] ) && $saved['owner'] !== $local['instance'] ) {
+		$problem = 'the saved copy belongs to another instance';
+	} else {
+		$problem = null;
+	}
+
+	return array( 'local' => $local + array( 'daemon_alive' => $alive ), 'saved' => $saved, 'fault' => $fault, 'problem' => $problem );
+}
+
+add_action(
+	'rest_api_init',
+	static function () {
+		// For anyone: only whether it is being saved, and how recent the copy is.
+		register_rest_route(
+			'id5-host/v1',
+			'/saved',
+			array(
+				'methods'             => 'GET',
+				'permission_callback' => '__return_true',
+				'callback'            => static function () {
+					$status = id5_host_save_status();
+
+					return array(
+						'ok'         => null === $status['problem'],
+						'problem'    => $status['problem'],
+						'generation' => $status['saved'] ? (int) $status['saved']['generation'] : null,
+						'saved_ago'  => $status['saved'] ? (int) $status['saved']['age'] : null,
+						'started'    => isset( $status['local']['start'] ) ? preg_replace( '/:.*/s', '', (string) $status['local']['start'] ) : null,
+					);
+				},
+			)
+		);
+	}
+);
+
+// For the administrator, on the connection settings screen: the details.
+add_action(
+	'admin_notices',
+	static function () {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+
+		if ( ! $screen || 'settings_page_id5-cms' !== $screen->id || ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		$status = id5_host_save_status();
+		$local  = $status['local'];
+		$when   = static function ( $time ) {
+			return $time ? human_time_diff( (int) $time ) . ' ที่แล้ว' : '—';
+		};
+
+		printf(
+			'<div class="notice notice-%s" id="id5-host-save-status"><p><strong>การบันทึกข้อมูลของ WordPress:</strong> %s</p><p style="font-family:monospace;font-size:12px;white-space:pre-wrap">%s</p></div>',
+			$status['problem'] ? 'error' : 'success',
+			$status['problem'] ? 'มีปัญหา — ' . esc_html( $status['problem'] ) : 'ปกติ ข้อมูลถูกบันทึกไว้อย่างปลอดภัย',
+			esc_html(
+				implode(
+					"\n",
+					array(
+						'when this instance started: ' . ( $local['start'] ?? 'unknown' ) . ' (' . $when( $local['start_at'] ?? 0 ) . ')',
+						'saving process: ' . ( $local['daemon_alive'] ? 'running' : 'NOT running' ) . ', started ' . $when( $local['daemon_started_at'] ?? 0 ),
+						'last save from here: ' . $when( $local['saved_at'] ?? 0 ) . ( isset( $local['generation'] ) ? ', generation ' . (int) $local['generation'] : '' ),
+						'last check: ' . $when( $local['checked_at'] ?? 0 ) . ' (' . ( $local['last'] ?? '—' ) . ')',
+						'last error: ' . ( empty( $local['error'] ) ? 'none' : $local['error'] . ' (' . $when( $local['error_at'] ?? 0 ) . ')' ),
+						'saved copy: ' . ( $status['saved'] ? 'generation ' . (int) $status['saved']['generation'] . ', ' . (int) $status['saved']['blocks'] . ' blocks, ' . size_format( (int) $status['saved']['size'] ) . ', ' . (int) $status['saved']['age'] . ' s old' : 'none' ) . ( $status['fault'] ? ' — ' . $status['fault'] : '' ),
+						'uploaded files kept: ' . ( class_exists( 'ID5_Uploads_Store' ) ? ID5_Uploads_Store::count() : '?' ),
+					)
+				)
+			)
+		);
+	}
+);
+
 // The first logins. When the site is created the start-up script gives every
 // person a random password and stores them encrypted with the maintainer's
 // public key (docker/wordpress/maintainer-public.pem). What is served here is

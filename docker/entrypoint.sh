@@ -50,7 +50,7 @@ as_www php artisan cms:media:restore || true
 DATA=/var/www/wordpress-data
 mkdir -p "$DATA" /var/www/wordpress/wp-content/uploads
 chown -R www-data:www-data "$DATA" /var/www/wordpress/wp-content/uploads
-rm -f "$DATA/.offline" "$DATA/.just-created"
+rm -f "$DATA/.offline" "$DATA/.just-created" "$DATA/.stopping"
 
 SYNC_PID=""
 set +e
@@ -62,9 +62,22 @@ if [ "$restored" = "0" ] || [ "$restored" = "3" ]; then
     # 0: the saved site is back. 3: nothing saved yet — boot.php creates the
     # site from the seed (the first start ever).
     if as_www php /usr/local/share/id5/boot.php; then
-        # Started directly (no wrapper process), so that the stop signal below
-        # reaches it and it can save one last time.
-        setpriv --reuid=www-data --regid=www-data --init-groups php /usr/local/share/id5/sqlite-sync.php daemon &
+        # Kept running: if it ever dies (this is a small instance), nothing
+        # would be saved until the next restart. It is started directly, with
+        # no wrapper process, so the stop signal below reaches it and it can
+        # save one last time. Exit 9 means it stepped aside for a newer
+        # instance on purpose.
+        (
+            set +e   # a failing run must lead to the next one, not end the loop
+            trap '' TERM INT WINCH
+            while [ ! -f "$DATA/.stopping" ]; do
+                setpriv --reuid=www-data --regid=www-data --init-groups php /usr/local/share/id5/sqlite-sync.php daemon
+                code=$?
+                { [ "$code" = "9" ] || [ -f "$DATA/.stopping" ]; } && break
+                echo "[id5] the saving process stopped (exit $code); starting it again"
+                sleep 3
+            done
+        ) &
         SYNC_PID=$!
     else
         echo "[id5] WordPress could not be started; it stays offline until the next restart. The public website is not affected."
@@ -106,7 +119,8 @@ shutdown() {
     kill -TERM "$APACHE_PID" 2>/dev/null || true
 
     if [ -n "$SYNC_PID" ]; then
-        kill -TERM "$SYNC_PID" 2>/dev/null || true
+        touch "$DATA/.stopping"
+        pkill -TERM -u www-data -f 'sqlite-sync.php daemon' 2>/dev/null || true
         wait "$SYNC_PID" 2>/dev/null || true
     fi
     exit 0
