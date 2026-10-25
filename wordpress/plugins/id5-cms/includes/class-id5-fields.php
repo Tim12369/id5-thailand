@@ -81,11 +81,16 @@ class ID5_Fields {
 	private static function prefill( $post_id, $field ) {
 		$name = 'id5_' . $field['key'];
 
-		if ( ! isset( $_GET[ $name ] ) || 'auto-draft' !== get_post_status( $post_id ) || ! in_array( $field['type'], array( 'text', 'number' ), true ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+		if ( ! isset( $_GET[ $name ] ) || 'auto-draft' !== get_post_status( $post_id ) || ! in_array( $field['type'], array( 'text', 'number', 'select' ), true ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return null;
 		}
 
 		$value = sanitize_text_field( wp_unslash( $_GET[ $name ] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+
+		// A choice only if it is one of the field's own.
+		if ( 'select' === $field['type'] ) {
+			return array_key_exists( $value, isset( $field['options'] ) ? $field['options'] : array() ) ? $value : null;
+		}
 
 		return 'number' === $field['type'] ? (string) (int) $value : $value;
 	}

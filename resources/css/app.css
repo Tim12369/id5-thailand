@@ -174,6 +174,113 @@
     .prose img.alignright, .prose figure.alignright { float: right; max-width: 50%; margin: 0.25em 0 0.75em 1.25em; }
     .prose::after { content: ''; display: table; clear: both; }
 
+    /* ── Blocks built in WordPress ("ส่วนเนื้อหาเพิ่มเติม", "หน้าเว็บเพิ่มเติม") ──
+       WordPress's block editor writes plain block markup; its own layout CSS
+       stays in WordPress. These rules give every block an editor may use
+       (ID5_Blocks::BLOCKS) its look here, and every colour and text size the
+       editor offers (ID5_Blocks::choices) its value. */
+    .cms-section--white { background: #fff; }
+    .cms-section--light { background: var(--color-brand-50); }
+    .cms-section--brand { background: var(--color-brand-900); }
+    .cms-section--brand .prose { color: #e2e8f0; }
+    .cms-section--brand .prose :is(h2, h3, h4, h5, h6, strong, b) { color: #fff; }
+    .cms-section--brand .prose a:not(.wp-block-button__link):not(.wp-block-file__button) { color: var(--color-gold-500); }
+
+    .cms-blocks .is-layout-flex { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; }
+    .cms-blocks .is-layout-flex.is-vertical { flex-direction: column; align-items: flex-start; }
+    .cms-blocks .is-content-justification-center { justify-content: center; }
+    .cms-blocks .is-content-justification-right { justify-content: flex-end; }
+    .cms-blocks .is-content-justification-space-between { justify-content: space-between; }
+
+    /* Rows of columns: side by side from tablet width, stacked on a phone. */
+    .cms-blocks .wp-block-columns { display: flex; flex-wrap: wrap; align-items: normal; gap: 1.5rem 2rem; margin: 0 0 1.5em; }
+    .cms-blocks .wp-block-columns.are-vertically-aligned-top { align-items: flex-start; }
+    .cms-blocks .wp-block-columns.are-vertically-aligned-center { align-items: center; }
+    .cms-blocks .wp-block-columns.are-vertically-aligned-bottom { align-items: flex-end; }
+    .cms-blocks .wp-block-column { flex: 1 1 100%; min-width: 0; overflow-wrap: break-word; }
+    .cms-blocks .wp-block-column.is-vertically-aligned-top { align-self: flex-start; }
+    .cms-blocks .wp-block-column.is-vertically-aligned-center { align-self: center; }
+    .cms-blocks .wp-block-column.is-vertically-aligned-bottom { align-self: flex-end; }
+    .cms-blocks .wp-block-column > :first-child, .cms-blocks .wp-block-group > :first-child { margin-top: 0; }
+    .cms-blocks .wp-block-column > :last-child, .cms-blocks .wp-block-group > :last-child { margin-bottom: 0; }
+    .cms-blocks .wp-block-columns.is-not-stacked-on-mobile { flex-wrap: nowrap; }
+    .cms-blocks .wp-block-columns.is-not-stacked-on-mobile > .wp-block-column { flex-basis: 0; flex-grow: 1; }
+    @media (min-width: 782px) {
+        .cms-blocks .wp-block-columns { flex-wrap: nowrap; }
+        .cms-blocks .wp-block-column { flex-basis: 0; flex-grow: 1; }
+        /* A width the editor set by hand (WordPress writes it inline). */
+        .cms-blocks .wp-block-column[style*="flex-basis"] { flex-grow: 0; }
+    }
+
+    .cms-blocks .wp-block-group { margin: 0 0 1.5em; }
+    .cms-blocks .wp-block-group.has-background,
+    .cms-blocks .wp-block-column.has-background,
+    .cms-blocks p.has-background { padding: 1.25rem 1.5rem; border-radius: 1rem; }
+
+    /* Pictures */
+    .cms-blocks .wp-block-image { margin: 0 0 1.25em; }
+    .cms-blocks .wp-block-image img { margin: 0; height: auto; max-width: 100%; vertical-align: bottom; }
+    .cms-blocks .wp-block-image.aligncenter, .cms-blocks .wp-block-image .aligncenter { text-align: center; margin-left: auto; margin-right: auto; display: table; }
+    .cms-blocks .wp-block-image.alignleft { float: left; margin: 0.25em 1.25em 0.75em 0; max-width: 50%; }
+    .cms-blocks .wp-block-image.alignright { float: right; margin: 0.25em 0 0.75em 1.25em; max-width: 50%; }
+    .cms-blocks .wp-block-image.is-style-rounded img { border-radius: 9999px; }
+    .cms-blocks .wp-element-caption, .cms-blocks .wp-block-image figcaption { margin: 0.5em 0 0; font-size: 0.75rem; color: var(--color-slate-500); text-align: center; }
+
+    /* PDF and other documents */
+    .cms-blocks .wp-block-file { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; margin: 0 0 1.25em; padding: 0.875rem 1rem; border: 1px solid var(--color-slate-200); border-radius: 0.875rem; background: #fff; }
+    .cms-blocks .wp-block-file > a:not(.wp-block-file__button) { flex: 1 1 12rem; font-weight: 600; color: var(--color-blue-700); }
+    .cms-blocks .wp-block-file > a:not(.wp-block-file__button)::before { content: ''; display: inline-block; width: 1.1em; height: 1.1em; margin-right: 0.5em; vertical-align: -0.15em; background: currentColor; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 3v4a1 1 0 0 0 1 1h4'/%3E%3Cpath d='M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 3v4a1 1 0 0 0 1 1h4'/%3E%3Cpath d='M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z'/%3E%3C/svg%3E") center / contain no-repeat; }
+    .cms-blocks .wp-block-file__button { display: inline-flex; align-items: center; padding: 0.45rem 1rem; border-radius: 0.6rem; background: var(--color-blue-700); color: #fff !important; font-size: 0.8125rem; font-weight: 600; text-decoration: none !important; }
+    .cms-blocks .wp-block-file__button:hover { background: var(--color-blue-800); }
+    /* An editor may leave the button's wording empty; it still says what it does. */
+    .cms-blocks .wp-block-file__button:empty::after { content: 'ดาวน์โหลด'; }
+    html[lang="en"] .cms-blocks .wp-block-file__button:empty::after { content: 'Download'; }
+    .cms-blocks .wp-block-file__embed { flex: 1 1 100%; order: 3; width: 100%; min-height: 24rem; border: 1px solid var(--color-slate-200); border-radius: 0.5rem; background: var(--color-slate-50); }
+
+    /* Buttons */
+    .cms-blocks .wp-block-buttons { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 0 0 1.25em; }
+    .cms-blocks .wp-block-button__link { display: inline-flex; align-items: center; justify-content: center; padding: 0.65rem 1.25rem; border-radius: 0.75rem; background: var(--color-blue-700); color: #fff !important; font-size: 0.875rem; font-weight: 600; text-decoration: none !important; transition: background-color .15s; }
+    .cms-blocks .wp-block-button__link:hover { background: var(--color-blue-800); }
+    .cms-blocks .wp-block-button.is-style-outline .wp-block-button__link { background: transparent; border: 2px solid currentColor; color: var(--color-blue-700) !important; }
+    .cms-blocks .wp-block-button.has-custom-width .wp-block-button__link, .cms-blocks .wp-block-button__width-100 .wp-block-button__link { width: 100%; }
+    .cms-blocks .wp-block-button__width-100 { flex-basis: 100%; }
+    .cms-blocks .wp-block-button__width-50 { flex-basis: calc(50% - 0.375rem); }
+
+    /* Other blocks */
+    .cms-blocks .wp-block-separator { border: 0; border-top: 1px solid var(--color-slate-200); margin: 2em auto; }
+    .cms-blocks .wp-block-separator:not(.is-style-wide) { max-width: 8rem; }
+    .cms-blocks .wp-block-separator.is-style-dots { border: 0; text-align: center; }
+    .cms-blocks .wp-block-separator.is-style-dots::before { content: '···'; letter-spacing: 1em; color: var(--color-slate-400); }
+    .cms-blocks .wp-block-spacer { clear: both; }
+    .cms-blocks .wp-block-table { margin: 0 0 1.25em; overflow-x: auto; }
+    .cms-blocks .wp-block-table.is-style-stripes tbody tr:nth-child(odd) { background: var(--color-slate-50); }
+    .cms-blocks .has-text-align-left { text-align: left; }
+    .cms-blocks .has-text-align-center { text-align: center; }
+    .cms-blocks .has-text-align-right { text-align: right; }
+
+    /* The editor's colours and text sizes (the same values as in WordPress). */
+    .cms-blocks .has-id5-blue-color { color: #1c3a9e; }
+    .cms-blocks .has-id5-navy-color { color: #0f1f4d; }
+    .cms-blocks .has-id5-gold-color { color: #d9a437; }
+    .cms-blocks .has-id5-red-color { color: #dc2626; }
+    .cms-blocks .has-id5-green-color { color: #059669; }
+    .cms-blocks .has-id5-slate-color { color: #334155; }
+    .cms-blocks .has-id5-mist-color { color: #eef4ff; }
+    .cms-blocks .has-id5-white-color { color: #fff; }
+    .cms-blocks .has-id5-blue-background-color { background-color: #1c3a9e; }
+    .cms-blocks .has-id5-navy-background-color { background-color: #0f1f4d; }
+    .cms-blocks .has-id5-gold-background-color { background-color: #d9a437; }
+    .cms-blocks .has-id5-red-background-color { background-color: #dc2626; }
+    .cms-blocks .has-id5-green-background-color { background-color: #059669; }
+    .cms-blocks .has-id5-slate-background-color { background-color: #334155; }
+    .cms-blocks .has-id5-mist-background-color { background-color: #eef4ff; }
+    .cms-blocks .has-id5-white-background-color { background-color: #fff; }
+    .cms-blocks .wp-block-button__link.has-background:not(.has-id5-white-background-color):not(.has-id5-mist-background-color):not(.has-id5-gold-background-color) { color: #fff !important; }
+    .cms-blocks .has-id5-small-font-size { font-size: 0.875rem; }
+    .cms-blocks .has-id5-normal-font-size { font-size: 1rem; }
+    .cms-blocks .has-id5-large-font-size { font-size: 1.25rem; }
+    .cms-blocks .has-id5-huge-font-size { font-size: 1.75rem; line-height: 1.3; }
+
     /* Skip link & screen-reader helpers already covered by Tailwind's sr-only,
        but we add a consistent "visually-hidden until focused" pattern for repeated use */
     .skip-link {

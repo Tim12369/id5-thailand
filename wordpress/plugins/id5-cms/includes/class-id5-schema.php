@@ -782,6 +782,60 @@ class ID5_Schema {
 			),
 
 			// ── Assessment results ──────────────────────────────────────────
+			// ── Free-form content, built from blocks ──────────────────────────
+			// The two types an editor composes themselves: rows of columns holding
+			// text, headings, pictures, PDF documents and buttons, in WordPress's
+			// own block editor. Everything else on the website keeps its fixed
+			// design; these add to it without being able to break it.
+			'id5_section' => array(
+				'label_th'      => 'ส่วนเนื้อหาเพิ่มเติม',
+				'label_en'      => 'Content sections',
+				'singular'      => 'ส่วนเนื้อหา',
+				'menu_icon'     => 'dashicons-layout',
+				'menu_position' => 20,
+				'supports'      => array( 'title', 'editor', 'page-attributes', 'revisions' ),
+				'block_editor'  => true,
+				'title_label'   => 'ชื่อส่วนนี้ (ใช้เรียกในระบบเท่านั้น ไม่แสดงบนเว็บไซต์)',
+				'editor_notice' => 'สร้างเนื้อหาด้วยบล็อก: กดปุ่ม + เพื่อเพิ่ม "คอลัมน์" (แถวที่แบ่งเป็นช่อง) "ข้อความ" "หัวข้อ" "รูปภาพ" "ไฟล์" (PDF) หรือ "ปุ่ม" แล้วเลือกตำแหน่งที่จะแสดงบนเว็บไซต์ในกล่องด้านล่าง',
+				'order_label'   => 'ลำดับ (เมื่อมีหลายส่วนในตำแหน่งเดียวกัน ตัวเลขน้อยอยู่บน)',
+				'laravel'       => array( 'table' => 'page_sections', 'kind' => 'section' ),
+				'boxes'         => array(
+					array(
+						'id'     => 'placement',
+						'title'  => 'แสดงที่ไหนบนเว็บไซต์',
+						'fields' => array(
+							array( 'key' => 'page', 'label' => 'หน้า', 'type' => 'select', 'options' => self::section_pages(), 'default' => '/', 'help' => 'หน้าของเว็บไซต์ที่จะแสดงส่วนนี้' ),
+							array( 'key' => 'position', 'label' => 'ตำแหน่งในหน้า', 'type' => 'select', 'options' => self::section_positions(), 'default' => 'bottom', 'help' => 'ตำแหน่งระหว่างส่วนต่าง ๆ ใช้ได้กับหน้าแรก หน้าอื่นจะแสดงที่ท้ายหน้า' ),
+							array( 'key' => 'language', 'label' => 'แสดงเมื่อผู้เข้าชมเลือกภาษา', 'type' => 'select', 'options' => array( 'both' => 'ทั้งภาษาไทยและอังกฤษ', 'th' => 'ภาษาไทยเท่านั้น', 'en' => 'ภาษาอังกฤษเท่านั้น' ), 'default' => 'both', 'help' => 'ต้องการเนื้อหาสองภาษา ให้สร้างสองส่วน: ส่วนหนึ่ง "ภาษาไทยเท่านั้น" อีกส่วน "ภาษาอังกฤษเท่านั้น"' ),
+							array( 'key' => 'background', 'label' => 'พื้นหลัง', 'type' => 'select', 'options' => array( 'none' => 'ไม่มี (สีพื้นของหน้า)', 'white' => 'สีขาว', 'light' => 'สีฟ้าอ่อน', 'brand' => 'สีน้ำเงิน (ตัวอักษรสีขาว)' ), 'default' => 'none' ),
+						),
+					),
+				),
+			),
+
+			'id5_page' => array(
+				'label_th'      => 'หน้าเว็บเพิ่มเติม',
+				'label_en'      => 'Pages',
+				'singular'      => 'หน้าเว็บ',
+				'menu_icon'     => 'dashicons-media-document',
+				'menu_position' => 19,
+				'supports'      => array( 'title', 'editor', 'excerpt', 'revisions' ),
+				'block_editor'  => true,
+				'nav_menus'     => true,
+				'title_label'   => 'ชื่อหน้า (ภาษาไทย) — แสดงเป็นหัวข้อใหญ่ของหน้า',
+				'editor_notice' => 'หน้าใหม่ของเว็บไซต์ สร้างด้วยบล็อกแบบเดียวกับ "ส่วนเนื้อหาเพิ่มเติม" เมื่อเผยแพร่แล้ว เพิ่มลงในเมนูได้ที่ เมนูนำทาง → หน้าเว็บเพิ่มเติม',
+				'laravel'       => array( 'table' => 'page_sections', 'kind' => 'page' ),
+				'boxes'         => array(
+					array(
+						'id'     => 'english',
+						'title'  => 'ภาษาอังกฤษ / English version',
+						'fields' => array(
+							array( 'key' => 'title_en', 'label' => 'ชื่อหน้า (English title)', 'type' => 'text', 'help' => 'เนื้อหาของหน้าแสดงเหมือนกันทั้งสองภาษา เว้นว่างไว้ได้ ระบบจะใช้ชื่อภาษาไทย' ),
+						),
+					),
+				),
+			),
+
 			'id5_assessment' => array(
 				'label_th'      => 'ผลการประเมิน',
 				'label_en'      => 'Assessment Results',
@@ -869,6 +923,51 @@ class ID5_Schema {
 				}
 			}
 		}
+	}
+
+	/**
+	 * The pages of the website a content section can be placed on: address =>
+	 * name. Pages made in WordPress ("หน้าเว็บเพิ่มเติม") are not listed: they
+	 * are built from blocks already.
+	 */
+	public static function section_pages() {
+		return array(
+			'/'                               => 'หน้าแรก',
+			'/about'                          => 'เกี่ยวกับเรา (แผนผังองค์กร)',
+			'/administrative-affairs-division' => 'ฝ่ายอำนวยการ',
+			'/foreigner-services-division'    => 'ฝ่ายบริการคนต่างด้าว',
+			'/investigation-division'         => 'ฝ่ายสืบสวนสอบสวน',
+			'/technology-division'            => 'ฝ่ายเทคโนโลยีตรวจคนเข้าเมือง',
+			'/ita'                            => 'ITA',
+			'/news'                           => 'ข่าวสาร',
+			'/announcements'                  => 'ประกาศ',
+			'/alerts'                         => 'การแจ้งเตือน',
+			'/knowledge'                      => 'คลังความรู้',
+			'/faq'                            => 'คำถามที่พบบ่อย',
+			'/services'                       => 'บริการ',
+			'/services/visa'                  => 'บริการ: วีซ่า',
+			'/services/tm30'                  => 'บริการ: ตม.30',
+			'/services/90-day'                => 'บริการ: รายงานตัว 90 วัน',
+			'/services/extension'            => 'บริการ: ขออยู่ต่อ',
+			'/services/overstay'              => 'บริการ: อยู่เกินกำหนด',
+			'/smart-guide'                    => 'คู่มือการใช้บริการ',
+			'/downloads'                      => 'ดาวน์โหลดแบบฟอร์ม',
+			'/offices'                        => 'สำนักงาน',
+			'/contact'                        => 'ติดต่อเรา',
+			'/emergency'                      => 'เหตุฉุกเฉิน',
+			'/open-data'                      => 'ข้อมูลเปิด',
+			'/assessment'                     => 'ประเมินสถานะเบื้องต้น',
+		);
+	}
+
+	/** Where on a page a section can sit: key => name. */
+	public static function section_positions() {
+		return array(
+			'bottom'         => 'ท้ายหน้า (ก่อนส่วนท้ายของเว็บไซต์)',
+			'after_hero'     => 'หน้าแรก: ใต้แบนเนอร์ใหญ่',
+			'after_services' => 'หน้าแรก: ใต้การ์ดบริการ 6 ใบ',
+			'after_news'     => 'หน้าแรก: ใต้ข่าวสาร ประกาศ และแจ้งเตือน',
+		);
 	}
 
 	/**

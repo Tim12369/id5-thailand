@@ -100,12 +100,14 @@ class MediaMirror
             $bases
         ))));
 
-        if (blank($html) || ! $bases || ! preg_match('/<(?:img|a)\b/i', $html)) {
+        if (blank($html) || ! $bases || ! preg_match('/<(?:img|a|object)\b/i', $html)) {
             return $html;
         }
 
-        return preg_replace_callback('/<(img|a)\b[^>]*>/i', function (array $tag) use ($bases) {
-            $attribute = strtolower($tag[1]) === 'img' ? 'src' : 'href';
+        // A picture's src, a link's href, and the data of a PDF shown inline
+        // (WordPress's File block embeds one with <object data="…">).
+        return preg_replace_callback('/<(img|a|object)\b[^>]*>/i', function (array $tag) use ($bases) {
+            $attribute = ['img' => 'src', 'a' => 'href', 'object' => 'data'][strtolower($tag[1])];
 
             if (! preg_match('/\s'.$attribute.'\s*=\s*(["\'])(.*?)\1/is', $tag[0], $found, PREG_OFFSET_CAPTURE)) {
                 return $tag[0];

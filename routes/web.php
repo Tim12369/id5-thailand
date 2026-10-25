@@ -7,6 +7,7 @@ use App\Http\Controllers\Public\AssessmentController;
 use App\Http\Controllers\Public\AlertController;
 use App\Http\Controllers\Public\AnnouncementController;
 use App\Http\Controllers\Public\ContactController;
+use App\Http\Controllers\Public\CustomPageController;
 use App\Http\Controllers\Public\EmergencyController;
 use App\Http\Controllers\Public\FaqController;
 use App\Http\Controllers\Public\FormDownloadController;
@@ -123,6 +124,9 @@ Route::middleware(['web', 'set.locale', 'cms.edit'])
         // ── Contact Center ─────────────────────────────────────────
         Route::get('/contact',   [ContactController::class, 'index'])->name('contact');
         Route::get('/emergency', [EmergencyController::class, 'index'])->name('emergency');
+
+        // ── Pages built in WordPress ("หน้าเว็บเพิ่มเติม") ──────────────
+        Route::get('/page/{key}', [CustomPageController::class, 'show'])->name('page')->where('key', '[a-z0-9-]+');
 
         // ── ITA & Open Data ────────────────────────────────────────
         Route::get('/ita',       [ItaController::class, 'index'])->name('ita');

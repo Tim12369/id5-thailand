@@ -3,7 +3,7 @@
  * Plugin Name:       ID5 CMS
  * Plugin URI:        https://github.com/immigration-division-5/id5-thailand
  * Description:       Turns this WordPress install into the editing layer for the ID5 @ Thailand 5.0 public website. Registers the site's content types with Thai labels, adds the Customizer panels for site-wide text, and pushes every change to the public website.
- * Version:           1.7.0
+ * Version:           1.8.0
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Author:            Immigration Division 5
@@ -14,7 +14,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'ID5_CMS_VERSION', '1.7.0' );
+define( 'ID5_CMS_VERSION', '1.8.0' );
 define( 'ID5_CMS_FILE', __FILE__ );
 define( 'ID5_CMS_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ID5_CMS_URL', plugin_dir_url( __FILE__ ) );
@@ -33,6 +33,7 @@ require_once ID5_CMS_DIR . 'includes/class-id5-site-editor.php';
 require_once ID5_CMS_DIR . 'includes/class-id5-texts.php';
 require_once ID5_CMS_DIR . 'includes/class-id5-numbering.php';
 require_once ID5_CMS_DIR . 'includes/class-id5-uploads-store.php';
+require_once ID5_CMS_DIR . 'includes/class-id5-blocks.php';
 
 /**
  * Boot every subsystem once WordPress is ready.
@@ -50,6 +51,7 @@ function id5_cms_boot() {
 	ID5_Texts::init();
 	ID5_Numbering::init();
 	ID5_Uploads_Store::init();
+	ID5_Blocks::init();
 }
 add_action( 'plugins_loaded', 'id5_cms_boot' );
 

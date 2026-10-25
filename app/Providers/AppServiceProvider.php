@@ -57,6 +57,10 @@ class AppServiceProvider extends ServiceProvider
         // form in WordPress. Like @cmsEdit it prints nothing for visitors.
         Blade::directive('cmsAdd', fn (string $expression) => "<?php echo \\App\\Support\\CmsEdit::addTile({$expression}); ?>");
 
+        // `@cmsSections('position')` places the content sections built in
+        // WordPress at this point of the page. Nothing at all where none exist.
+        Blade::directive('cmsSections', fn (string $expression) => "<?php echo \\App\\Support\\PageSections::render({$expression}); ?>");
+
         // `@jsText(__('key'))` prints a line of wording as a JavaScript string
         // that stays valid whatever an editor types into it.
         Blade::directive('jsText', fn (string $expression) => "<?php echo \\App\\Support\\CmsText::js({$expression}); ?>");

@@ -74,7 +74,7 @@ class AddPersonToRowTest extends TestCase
 
         $this->get('/about?id5_edit='.$this->token())->assertOk()
             ->assertSee('id="id5-bar"', false)
-            ->assertDontSee('data-cms-add=', false);
+            ->assertDontSee('data-cms-add="new:id5_person', false);
 
         $this->assertNull(CmsEdit::newPersonIn($this->section->fresh(), $this->section->tiers()->first()));
     }

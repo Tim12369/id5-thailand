@@ -12,6 +12,7 @@ use App\Models\ItaCard;
 use App\Models\ItaSection;
 use App\Models\OrgChartMember;
 use App\Models\OrgChartSection;
+use App\Models\PageSection;
 use App\Models\PublicForm;
 use App\Models\SmartGuide;
 use App\Models\Station;
@@ -268,6 +269,7 @@ class CmsEdit
             $model instanceof Category                 => ['หมวดหมู่', $model->name_th],
             $model instanceof ItaSection               => ['หมวด ITA', $model->title_th],
             $model instanceof OrgChartSection          => ['หน่วยงานในผัง', $model->name_th],
+            $model instanceof PageSection              => $model->kind === PageSection::PAGE ? ['หน้าเว็บ', (string) $model->title_th] : ['ส่วนเนื้อหา', (string) ($model->title_th ?: 'ส่วนเนื้อหา')],
             default                                    => ['เนื้อหา', (string) $model->getKey()],
         };
     }

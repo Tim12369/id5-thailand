@@ -129,6 +129,24 @@ return [
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Pages that can hold content sections built in WordPress
+    |--------------------------------------------------------------------------
+    |
+    | The same list as ID5_Schema::section_pages() in the plugin: in edit mode
+    | these pages offer "+ เพิ่มส่วนเนื้อหา" (App\Support\PageSections).
+    |
+    */
+
+    'section_pages' => [
+        '/', '/about', '/administrative-affairs-division', '/foreigner-services-division',
+        '/investigation-division', '/technology-division', '/ita', '/news', '/announcements',
+        '/alerts', '/knowledge', '/faq', '/services', '/services/visa', '/services/tm30',
+        '/services/90-day', '/services/extension', '/services/overstay', '/smart-guide',
+        '/downloads', '/offices', '/contact', '/emergency', '/open-data', '/assessment',
+    ],
+
     'mappers' => [
         'post'              => \App\Services\Cms\Mappers\ArticleMapper::class,
         'id5_announcement'  => \App\Services\Cms\Mappers\ArticleMapper::class,
@@ -143,6 +161,8 @@ return [
         'id5_guide_topic'   => \App\Services\Cms\Mappers\GuideTopicMapper::class,
         'id5_guide_content' => \App\Services\Cms\Mappers\GuideContentMapper::class,
         'id5_assessment'    => \App\Services\Cms\Mappers\AssessmentMapper::class,
+        'id5_section'       => \App\Services\Cms\Mappers\SectionMapper::class,
+        'id5_page'          => \App\Services\Cms\Mappers\SectionMapper::class,
     ],
 
 ];

@@ -41,7 +41,7 @@
 
     {{-- Main Content --}}
     <main id="main-content">
-        @yield('content')
+        @yield('content')@cmsSections('bottom')
     </main>
 
     {{-- Footer --}}

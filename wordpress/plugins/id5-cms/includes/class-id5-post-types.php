@@ -71,7 +71,8 @@ class ID5_Post_Types {
 					'exclude_from_search' => true,
 					'show_ui'             => true,
 					'show_in_menu'        => true,
-					'show_in_nav_menus'   => false,
+					// Pages built in WordPress can be put in the navigation menus.
+					'show_in_nav_menus'   => ! empty( $type['nav_menus'] ),
 					'show_in_rest'        => true,
 					'rest_base'           => $name,
 					'menu_icon'           => isset( $type['menu_icon'] ) ? $type['menu_icon'] : 'dashicons-admin-post',
@@ -204,7 +205,15 @@ class ID5_Post_Types {
 	 * separate background request.
 	 */
 	public static function use_classic_editor( $use_block_editor, $post_type ) {
-		return ID5_Schema::type( $post_type ) ? false : $use_block_editor;
+		$type = ID5_Schema::type( $post_type );
+
+		if ( ! $type ) {
+			return $use_block_editor;
+		}
+
+		// Except the free-form types, which are built from blocks on purpose
+		// (see ID5_Blocks for what those blocks may be).
+		return ! empty( $type['block_editor'] );
 	}
 
 	/**

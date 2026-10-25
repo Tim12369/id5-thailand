@@ -67,7 +67,7 @@
 {{-- Spacer that accounts for the overlapping action cards on desktop --}}
 <div class="hidden lg:block h-16 bg-slate-50"></div>
 
-{{-- ══════════════════════════════════════════════════════════════
+{!! \App\Support\PageSections::render('after_hero') !!}{{-- ══════════════════════════════════════════════════════════════
      Explore ID5 Services — 6-card division/feature grid.
      "Who Are You?" and "Where Are You?" don't navigate anywhere new:
      "Who Are You?" smooth-scrolls to the existing persona section
@@ -112,7 +112,7 @@
     </div>
 </section>
 
-{{-- ══════════════════════════════════════════════════════════════
+{!! \App\Support\PageSections::render('after_services') !!}{{-- ══════════════════════════════════════════════════════════════
      News & Announcements & Alerts — 3-column overview
      ══════════════════════════════════════════════════════════════ --}}
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-16">
@@ -131,7 +131,7 @@
     </div>
 </section>
 
-{{-- ══════════════════════════════════════════════════════════════
+{!! \App\Support\PageSections::render('after_news') !!}{{-- ══════════════════════════════════════════════════════════════
      Guided Assessment entry band. Replaces the old "Who Are You?"
      persona popup/scroll flow entirely — instead of asking users to
      self-classify, the "Start" button opens the guided wizard
