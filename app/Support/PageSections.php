@@ -46,9 +46,10 @@ class PageSections
 
         foreach ($sections as $section) {
             $html .= sprintf(
-                '<section class="cms-section cms-section--%s">%s<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-12"><div class="prose cms-blocks max-w-none">%s</div></div></section>',
+                '<section class="cms-section cms-section--%s">%s<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-12"><div class="prose cms-blocks max-w-none"%s>%s</div></div></section>',
                 e($section->background),
                 CmsEdit::marker($section),
+                self::builderAttribute($section),
                 $section->body_html
             );
         }
@@ -85,6 +86,22 @@ class PageSections
         }
 
         return self::$loaded['sections'];
+    }
+
+    /**
+     * In edit mode, where the page builder in the WordPress site editor may
+     * draw this item's blocks: ` data-id5-builder="id5_section:12"`.
+     * Visitors never get it.
+     */
+    public static function builderAttribute(PageSection $section): string
+    {
+        if (! CmsEdit::active() || ! $section->wp_post_id) {
+            return '';
+        }
+
+        $type = $section->kind === PageSection::PAGE ? 'id5_page' : 'id5_section';
+
+        return sprintf(' data-id5-builder="%s:%d" data-id5-title="%s"', $type, $section->wp_post_id, e((string) $section->title_th));
     }
 
     /** Forget what was loaded (a new request, or a test). */

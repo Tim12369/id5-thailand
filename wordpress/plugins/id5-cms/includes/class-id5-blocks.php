@@ -40,6 +40,8 @@ class ID5_Blocks {
 		'core/spacer',
 		'core/quote',
 		'core/table',
+		'core/details',
+		'core/embed',
 	);
 
 	public static function init() {
@@ -47,6 +49,30 @@ class ID5_Blocks {
 		add_filter( 'wp_theme_json_data_theme', array( __CLASS__, 'choices' ) );
 		add_action( 'enqueue_block_editor_assets', array( __CLASS__, 'assets' ) );
 		add_filter( 'post_type_link', array( __CLASS__, 'public_address' ), 10, 2 );
+	}
+
+	/** The website's colours (resources/css/app.css has a rule for each). */
+	public static function palette() {
+		return array(
+			array( 'slug' => 'id5-blue', 'name' => 'น้ำเงิน', 'color' => '#1c3a9e' ),
+			array( 'slug' => 'id5-navy', 'name' => 'น้ำเงินเข้ม', 'color' => '#0f1f4d' ),
+			array( 'slug' => 'id5-gold', 'name' => 'ทอง', 'color' => '#d9a437' ),
+			array( 'slug' => 'id5-red', 'name' => 'แดง', 'color' => '#dc2626' ),
+			array( 'slug' => 'id5-green', 'name' => 'เขียว', 'color' => '#059669' ),
+			array( 'slug' => 'id5-slate', 'name' => 'เทาเข้ม', 'color' => '#334155' ),
+			array( 'slug' => 'id5-mist', 'name' => 'ฟ้าอ่อน', 'color' => '#eef4ff' ),
+			array( 'slug' => 'id5-white', 'name' => 'ขาว', 'color' => '#ffffff' ),
+		);
+	}
+
+	/** The website's text sizes. */
+	public static function font_sizes() {
+		return array(
+			array( 'slug' => 'id5-small', 'name' => 'เล็ก', 'size' => '0.875rem' ),
+			array( 'slug' => 'id5-normal', 'name' => 'ปกติ', 'size' => '1rem' ),
+			array( 'slug' => 'id5-large', 'name' => 'ใหญ่', 'size' => '1.25rem' ),
+			array( 'slug' => 'id5-huge', 'name' => 'ใหญ่มาก', 'size' => '1.75rem' ),
+		);
 	}
 
 	public static function is_block_type( $post_type ) {
@@ -84,16 +110,7 @@ class ID5_Blocks {
 						'gradients'        => array(),
 						'duotone'          => array(),
 						'link'             => false,
-						'palette'          => array(
-							array( 'slug' => 'id5-blue', 'name' => 'น้ำเงิน', 'color' => '#1c3a9e' ),
-							array( 'slug' => 'id5-navy', 'name' => 'น้ำเงินเข้ม', 'color' => '#0f1f4d' ),
-							array( 'slug' => 'id5-gold', 'name' => 'ทอง', 'color' => '#d9a437' ),
-							array( 'slug' => 'id5-red', 'name' => 'แดง', 'color' => '#dc2626' ),
-							array( 'slug' => 'id5-green', 'name' => 'เขียว', 'color' => '#059669' ),
-							array( 'slug' => 'id5-slate', 'name' => 'เทาเข้ม', 'color' => '#334155' ),
-							array( 'slug' => 'id5-mist', 'name' => 'ฟ้าอ่อน', 'color' => '#eef4ff' ),
-							array( 'slug' => 'id5-white', 'name' => 'ขาว', 'color' => '#ffffff' ),
-						),
+						'palette'          => self::palette(),
 					),
 					'typography'      => array(
 						'customFontSize' => false,
@@ -107,12 +124,7 @@ class ID5_Blocks {
 						'dropCap'        => false,
 						'writingMode'    => false,
 						'fluid'          => false,
-						'fontSizes'      => array(
-							array( 'slug' => 'id5-small', 'name' => 'เล็ก', 'size' => '0.875rem' ),
-							array( 'slug' => 'id5-normal', 'name' => 'ปกติ', 'size' => '1rem' ),
-							array( 'slug' => 'id5-large', 'name' => 'ใหญ่', 'size' => '1.25rem' ),
-							array( 'slug' => 'id5-huge', 'name' => 'ใหญ่มาก', 'size' => '1.75rem' ),
-						),
+						'fontSizes'      => self::font_sizes(),
 					),
 					'spacing'         => array(
 						'padding'           => false,

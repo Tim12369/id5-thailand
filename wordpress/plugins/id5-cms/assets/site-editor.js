@@ -77,7 +77,9 @@
 		setState: function ( text, busy ) { setState( text, busy ); },
 		tellPreview: function ( message ) { tellPreview( message ); },
 		onPage: null,
-		openText: null
+		openText: null,
+		openTarget: function ( target, title ) { openTarget( target, title ); },
+		newSection: null
 	};
 
 	function setState( text, busy ) {
@@ -314,6 +316,10 @@
 		if ( 'post' === kind && /^\d+$/.test( value ) ) {
 			pendingFocus = target;
 			openOverlay( CFG.adminUrl + 'post.php?post=' + value + '&action=edit', title || 'แก้ไข', target );
+		} else if ( 'new' === kind && 0 === value.indexOf( 'id5_section?' ) && window.ID5SE.newSection && window.ID5SE.newSection( value ) ) {
+			// A section placed on this page is built right on the page instead
+			// (site-builder.js); only without the builder does the form open.
+			return;
 		} else if ( 'new' === kind && ( info = typeInfo( value.split( '?' )[ 0 ] ) ) && info.canCreate ) {
 			// "new:id5_person?id5_section=…" opens the form with some of it
 			// already filled in. Only the plugin's own fields are passed on.

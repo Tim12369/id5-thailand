@@ -14,7 +14,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'ID5_CMS_VERSION', '1.8.0' );
+define( 'ID5_CMS_VERSION', '1.9.0' );
 define( 'ID5_CMS_FILE', __FILE__ );
 define( 'ID5_CMS_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ID5_CMS_URL', plugin_dir_url( __FILE__ ) );
@@ -30,6 +30,7 @@ require_once ID5_CMS_DIR . 'includes/class-id5-webhook.php';
 require_once ID5_CMS_DIR . 'includes/class-id5-roles.php';
 require_once ID5_CMS_DIR . 'includes/class-id5-admin.php';
 require_once ID5_CMS_DIR . 'includes/class-id5-site-editor.php';
+require_once ID5_CMS_DIR . 'includes/class-id5-site-builder.php';
 require_once ID5_CMS_DIR . 'includes/class-id5-texts.php';
 require_once ID5_CMS_DIR . 'includes/class-id5-numbering.php';
 require_once ID5_CMS_DIR . 'includes/class-id5-uploads-store.php';
@@ -48,6 +49,7 @@ function id5_cms_boot() {
 	ID5_Roles::init();
 	ID5_Admin::init();
 	ID5_Site_Editor::init();
+	ID5_Site_Builder::init();
 	ID5_Texts::init();
 	ID5_Numbering::init();
 	ID5_Uploads_Store::init();

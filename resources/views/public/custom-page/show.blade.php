@@ -15,7 +15,7 @@
         <h1 class="text-2xl lg:text-3xl font-bold text-slate-800">{{ $page->getLocalizedTitle() }}</h1>
     </div>
 
-    <div class="prose cms-blocks max-w-none">
+    <div class="prose cms-blocks max-w-none"{!! \App\Support\PageSections::builderAttribute($page) !!}>
         {!! $page->body_html !!}
     </div>
 </div>

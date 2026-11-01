@@ -262,6 +262,10 @@
     function targetOf(el) {
         if (!el) { return null; }
 
+        // A section built from blocks has the page builder's own toolbars
+        // (cms-builder.blade.php) instead of a pencil.
+        if (root.classList.contains('id5-building') && (el.closest('[data-id5-root]') || el.querySelector('[data-id5-root]'))) { return null; }
+
         if (el.hasAttribute('data-cms-text')) {
             var keys = el.getAttribute('data-cms-text').split(' ').filter(Boolean);
             return { el: el, target: 'text:' + keys.join(','), kind: 'ข้อความ', title: (el.textContent || '').trim().slice(0, 90), text: true };
@@ -430,4 +434,6 @@
     }, true);
 })();
 </script>
+
+@include('public.layouts.partials.cms-builder')
 @endif

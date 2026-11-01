@@ -11,7 +11,28 @@
 		return;
 	}
 
+	// Videos: the website plays YouTube only, so that is the only kind of
+	// embed offered.
+	var youtubeOnly = function ( settings, name ) {
+		if ( 'core/embed' === name && settings.variations ) {
+			settings = Object.assign( {}, settings, { variations: settings.variations.filter( function ( v ) { return 'youtube' === v.name; } ) } );
+		}
+		return settings;
+	};
+
+	if ( wp.hooks ) {
+		wp.hooks.addFilter( 'blocks.registerBlockType', 'id5/youtube-only', youtubeOnly );
+	}
+
 	wp.domReady( function () {
+		if ( wp.blocks && wp.blocks.getBlockVariations && wp.blocks.getBlockVariations( 'core/embed' ) ) {
+			wp.blocks.getBlockVariations( 'core/embed' ).forEach( function ( v ) {
+				if ( 'youtube' !== v.name ) {
+					wp.blocks.unregisterBlockVariation( 'core/embed', v.name );
+				}
+			} );
+		}
+
 		if ( cfg && cfg.notice ) {
 			wp.data.dispatch( 'core/notices' ).createNotice( 'info', cfg.notice, { id: 'id5-block-help', isDismissible: true } );
 		}

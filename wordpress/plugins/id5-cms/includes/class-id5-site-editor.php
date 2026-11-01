@@ -270,6 +270,8 @@ class ID5_Site_Editor {
 				'canSettings' => current_user_can( 'edit_theme_options' ),
 			)
 		);
+
+		ID5_Site_Builder::enqueue();
 	}
 
 	public static function render() {
@@ -286,7 +288,10 @@ class ID5_Site_Editor {
 				<header class="id5-se__head">
 					<a class="id5-se__close" id="id5-se-close" href="#" title="ปิดและกลับไปที่เว็บไซต์"><span class="dashicons dashicons-no-alt"></span></a>
 					<span class="id5-se__state" id="id5-se-state">เผยแพร่แล้ว</span>
+					<button type="button" class="button button-primary id5-se__publish" id="id5-sb-publish" disabled title="บันทึกสิ่งที่สร้างหรือแก้ไขบนหน้าเว็บ แล้วเผยแพร่บนเว็บไซต์">เผยแพร่</button>
 				</header>
+
+				<div class="id5-sb" id="id5-sb" hidden></div>
 
 				<div class="id5-se__intro">
 					<span class="id5-se__intro-label">กำลังแก้ไขเว็บไซต์</span>
@@ -370,6 +375,10 @@ class ID5_Site_Editor {
 
 				<footer class="id5-se__foot">
 					<a class="id5-se__dash" href="<?php echo esc_url( admin_url() ); ?>" title="ไปที่แผงควบคุม WordPress"><span class="dashicons dashicons-wordpress"></span>แผงควบคุม</a>
+					<span class="id5-se__history" role="group" aria-label="ย้อนกลับและทำซ้ำ">
+						<button type="button" id="id5-sb-undo" disabled title="ย้อนกลับ (Ctrl+Z)"><span class="dashicons dashicons-undo"></span></button>
+						<button type="button" id="id5-sb-redo" disabled title="ทำซ้ำ (Ctrl+Y)"><span class="dashicons dashicons-redo"></span></button>
+					</span>
 					<span class="id5-se__devices" role="group" aria-label="ขนาดหน้าจอตัวอย่าง">
 						<button type="button" class="is-active" data-device="desktop" title="คอมพิวเตอร์"><span class="dashicons dashicons-desktop"></span></button>
 						<button type="button" data-device="tablet" title="แท็บเล็ต"><span class="dashicons dashicons-tablet"></span></button>

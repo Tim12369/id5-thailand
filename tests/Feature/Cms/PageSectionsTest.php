@@ -157,4 +157,24 @@ class PageSectionsTest extends TestCase
 
         $this->get('/?id5_edit='.$this->token())->assertOk()->assertSee('data-cms-edit="post:500"', false);
     }
+
+    #[Test]
+    public function only_an_editor_gets_the_page_builder_on_a_section_and_a_page(): void
+    {
+        $this->sync();
+        $this->sync(['wp_post_id' => 600, 'post_type' => 'id5_page', 'title' => 'หน้าทดสอบ', 'slug' => 'visa-guide']);
+
+        // Visitors: not a byte of the builder.
+        foreach (['/', '/page/visa-guide'] as $path) {
+            $this->get($path)->assertOk()->assertDontSee('data-id5-builder', false)->assertDontSee('id5b-', false);
+        }
+
+        $this->get('/?id5_edit='.$this->token())->assertOk()
+            ->assertSee('data-id5-builder="id5_section:500"', false)
+            ->assertSee('builder-sections', false);
+
+        PageSections::reset();
+        $this->get('/page/visa-guide?id5_edit='.$this->token())->assertOk()
+            ->assertSee('data-id5-builder="id5_page:600"', false);
+    }
 }
