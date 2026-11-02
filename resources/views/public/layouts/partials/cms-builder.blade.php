@@ -74,6 +74,8 @@
     .id5b-textbar { position: fixed; z-index: 2147482900; display: none; height: 30px; border-radius: 4px; overflow: hidden; background: #1d2327; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
     .id5b-textbar button { width: 32px; height: 30px; margin: 0; padding: 0; border: 0; background: none; color: #fff; cursor: pointer; font-size: 16px; }
     .id5b-textbar button:hover { background: #2c3338; color: #72aee6; }
+    .id5b-pending i { font-size: 18px; animation: id5b-spin 1s linear infinite; }
+    @keyframes id5b-spin { to { transform: rotate(360deg); } }
     html.id5b-dragging, html.id5b-dragging * { cursor: grabbing !important; user-select: none !important; }
     html.id5b-resizing, html.id5b-resizing * { cursor: col-resize !important; user-select: none !important; }
 </style>
@@ -883,6 +885,77 @@
         else if (key === 'escape') { tell({ type: 'builder-key', key: 'escape' }); }
     });
 
+    // ── Whole sections, added, removed or moved without a reload ─────────
+    // The same markup PageSections::render() gives a section, so a section
+    // added here looks exactly as it will once the website has it.
+    function slotTile(slot) {
+        return Array.prototype.filter.call(document.querySelectorAll('[data-cms-add^="new:id5_section?"]'), function (el) {
+            var query = new URLSearchParams(el.getAttribute('data-cms-add').split('?')[1] || '');
+            return (query.get('id5_page') || '/') === slot.page && (query.get('id5_position') || 'bottom') === slot.position;
+        })[0] || null;
+    }
+
+    // New sections go just above the slot's "+ เพิ่มส่วนเนื้อหา", after the
+    // sections already there.
+    function placeSection(section, slot) {
+        var tile = slot ? slotTile(slot) : null;
+        var holder = tile ? tile.parentElement : null;
+        if (holder && holder.parentElement) { holder.parentElement.insertBefore(section, holder); return; }
+        var last = Array.prototype.slice.call(document.querySelectorAll('.cms-section')).pop();
+        if (last) { last.parentElement.insertBefore(section, last.nextSibling); return; }
+        (document.querySelector('main') || document.body).appendChild(section);
+    }
+
+    function dropPending() {
+        document.querySelectorAll('.id5b-pending').forEach(function (el) { el.remove(); });
+    }
+
+    function showPending(slot) {
+        dropPending();
+        var section = make('section', 'cms-section id5b-ui id5b-pending', '<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6"><div class="id5b-root-empty">' + ti('loader-2') + '<span>กำลังเพิ่มส่วนเนื้อหา…</span></div></div>');
+        placeSection(section, slot);
+        section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function addRoot(data) {
+        var at = document.querySelector('.id5b-pending');
+        if (roots[data.id]) { if (at) { at.remove(); } return; }
+        var section = make('section', 'cms-section cms-section--' + (data.bg || 'none'));
+        var box = make('div', 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-12');
+        var root = make('div', 'prose cms-blocks max-w-none');
+        root.setAttribute('data-id5-builder', (data.kind || 'id5_section') + ':' + data.id);
+        root.setAttribute('data-id5-title', data.title || '');
+        root.setAttribute('data-id5-root', data.id);
+        box.appendChild(root);
+        section.appendChild(box);
+        if (at) { at.parentElement.replaceChild(section, at); } else { placeSection(section, data.slot); }
+        roots[data.id] = root;
+        sections.push({ type: data.kind || 'id5_section', id: data.id, title: data.title || '' });
+        doc.classList.add('id5-building');
+        setHover({ root: null, row: null, col: null, comp: null });
+    }
+
+    function removeRoot(id) {
+        var root = roots[id];
+        if (!root) { return; }
+        setHover({ root: null, row: null, col: null, comp: null });
+        if (editing && root.contains(editing.el)) { stopEdit(true); }
+        (root.closest('.cms-section') || root).remove();
+        delete roots[id];
+        sections = sections.filter(function (s) { return s.id !== id; });
+        Object.keys(meta).forEach(function (k) { if (meta[k].root === id) { delete meta[k]; } });
+    }
+
+    function moveRoot(id, step) {
+        var root = roots[id];
+        var section = root && root.closest('.cms-section');
+        if (!section) { return; }
+        var other = step === 'up' ? section.previousElementSibling : section.nextElementSibling;
+        if (!other || !other.classList.contains('cms-section')) { return; }
+        setHover({ root: null, row: null, col: null, comp: null });
+        if (step === 'up') { other.parentElement.insertBefore(section, other); } else { other.parentElement.insertBefore(other, section); }
+    }
+
     // ── Messages from the site editor ────────────────────────────────────
     window.addEventListener('message', function (event) {
         if (event.origin !== ORIGIN || !event.data || event.data.source !== 'id5-cms') { return; }
@@ -909,6 +982,27 @@
                     var target = d.s ? block.querySelector(d.s) : block;
                     if (target) { startEdit({ el: target, id: data.id, a: d.a }, true); }
                 }, 60);
+                break;
+            case 'builder-pending-root':
+                showPending(data.slot);
+                break;
+            case 'builder-pending-cancel':
+                dropPending();
+                break;
+            case 'builder-add-root':
+                addRoot(data);
+                break;
+            case 'builder-remove-root':
+                removeRoot(data.id);
+                break;
+            case 'builder-hide-root':
+                if (roots[data.id]) {
+                    setHover({ root: null, row: null, col: null, comp: null });
+                    (roots[data.id].closest('.cms-section') || roots[data.id]).hidden = !!data.hide;
+                }
+                break;
+            case 'builder-move-root':
+                moveRoot(data.id, data.step);
                 break;
             case 'builder-drag-start':
                 tile = { row: !!data.row };

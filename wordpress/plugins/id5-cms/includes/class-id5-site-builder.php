@@ -216,9 +216,10 @@ class ID5_Site_Builder {
 			wp_send_json_error( array( 'message' => 'เพิ่มส่วนเนื้อหาไม่สำเร็จ: ' . $id->get_error_message() ), 500 );
 		}
 
-		// The fields were written with the post, before save_post ran; make
-		// sure the website is told about the finished item.
-		ID5_Webhook::notify( array( 'event' => 'post.updated', 'post_type' => 'id5_section', 'post_id' => $id ) );
+		// No extra notification here: the fields are written with the post,
+		// before save_post sends its own "post.created". A second one in the
+		// same request made a single-process server (a development computer)
+		// wait on itself for ten seconds.
 
 		wp_send_json_success( array_merge( self::describe( get_post( $id ) ), array( 'pending' => 'pending' === $status ) ) );
 	}

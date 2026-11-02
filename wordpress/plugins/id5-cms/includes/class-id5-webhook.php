@@ -124,28 +124,43 @@ class ID5_Webhook {
 	 * updates still sends a single call.
 	 */
 	public static function notify( array $payload ) {
-		static $sent = array();
-
 		if ( self::$muted ) {
 			return;
 		}
 
 		$key = wp_json_encode( $payload );
 
-		if ( isset( $sent[ $key ] ) ) {
+		if ( isset( self::$queue[ $key ] ) ) {
 			return;
 		}
 
-		$sent[ $key ] = true;
+		self::$queue[ $key ] = $payload;
 
 		// Deliver after the response is sent so editors never wait on the
-		// website's network round trip.
-		add_action(
-			'shutdown',
-			function () use ( $payload ) {
-				ID5_Webhook::deliver( $payload, 0 );
-			}
-		);
+		// website's network round trip — all of this request's changes in one
+		// call. (Separate calls made a website that handles one request at a
+		// time, as on a development computer, wait on itself: it was still
+		// fetching the first change from WordPress while WordPress waited for
+		// it to accept the second.)
+		if ( 1 === count( self::$queue ) ) {
+			add_action( 'shutdown', array( __CLASS__, 'flush' ) );
+		}
+	}
+
+	/** The changes queued during this request. */
+	private static $queue = array();
+
+	public static function flush() {
+		$changes     = array_values( self::$queue );
+		self::$queue = array();
+
+		if ( ! $changes ) {
+			return;
+		}
+
+		foreach ( array_chunk( $changes, 50 ) as $chunk ) {
+			self::deliver( 1 === count( $chunk ) ? $chunk[0] : array( 'event' => 'batch', 'events' => $chunk ), 0 );
+		}
 	}
 
 	/**

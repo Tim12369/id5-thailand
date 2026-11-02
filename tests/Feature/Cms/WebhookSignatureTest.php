@@ -73,6 +73,31 @@ class WebhookSignatureTest extends TestCase
     }
 
     #[Test]
+    public function several_changes_from_one_action_arrive_as_one_batch(): void
+    {
+        $this->send(['event' => 'batch', 'events' => [
+            ['event' => 'post.updated', 'post_type' => 'id5_faq', 'post_id' => 42],
+            ['event' => 'post.updated', 'post_type' => 'id5_faq', 'post_id' => 43],
+            ['event' => 'post.updated', 'post_type' => 'not_ours', 'post_id' => 44],
+            ['event' => 'post.updated', 'post_type' => 'id5_faq'],
+            ['event' => 'settings.updated'],
+        ]])->assertOk()->assertJson(['status' => 'queued']);
+
+        // The two FAQ changes and the settings change; the rest is ignored.
+        Queue::assertPushed(SyncCmsChange::class, 3);
+        foreach ([42, 43] as $id) {
+            Queue::assertPushed(SyncCmsChange::class, fn (SyncCmsChange $job) => $job->postType === 'id5_faq' && $job->postId === $id);
+        }
+        Queue::assertPushed(SyncCmsChange::class, fn (SyncCmsChange $job) => $job->event === 'settings.updated');
+
+        // An empty, oversized or malformed batch is refused as a whole.
+        foreach ([[], array_fill(0, 51, ['event' => 'settings.updated']), ['not an event']] as $events) {
+            $this->assertFalse($this->send(['event' => 'batch', 'events' => $events])->isSuccessful());
+        }
+        Queue::assertPushed(SyncCmsChange::class, 3);
+    }
+
+    #[Test]
     public function by_default_the_change_is_applied_right_after_replying_with_no_queue_worker(): void
     {
         config([

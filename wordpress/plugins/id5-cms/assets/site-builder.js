@@ -584,10 +584,14 @@
 
 		var content = wpb.serialize( blocks && blocks.length ? blocks : [ row( [ null ] ) ] );
 
+		// Show where it is coming at once, while WordPress creates it.
+		SE.tellPreview( { type: 'builder-pending-root', slot: slot } );
+
 		ajax( 'id5_builder_create', { page: slot.page, position: slot.position, content: content } ).then( function ( result ) {
 			busy = false;
 
 			if ( ! result.success ) {
+				SE.tellPreview( { type: 'builder-pending-cancel' } );
 				SE.setState( 'เพิ่มไม่สำเร็จ', false );
 				window.alert( ( result.data && result.data.message ) || 'เพิ่มส่วนเนื้อหาไม่สำเร็จ' );
 				return;
@@ -596,8 +600,15 @@
 			var doc = adopt( result.data );
 			selectedDoc = doc.id;
 
-			// The website shows the new section once it has received it.
-			afterLoadOnce = function () {
+			// Drawn into the page straight away: no waiting for the website to
+			// receive it and no reload. (WordPress tells the website in the
+			// background, as for every save.)
+			if ( onPage.indexOf( doc.id ) < 0 ) { onPage.push( doc.id ); }
+			SE.tellPreview( { type: 'builder-add-root', id: doc.id, kind: doc.type, title: doc.title, bg: doc.background, slot: slot } );
+			draw( doc );
+			SE.setState( result.data.pending ? 'รอตรวจก่อนเผยแพร่' : 'เผยแพร่แล้ว', false );
+
+			( function () {
 				// Select what was added (the first thing inside a column), or
 				// the empty column of a new, empty section.
 				var column = null;
@@ -613,8 +624,8 @@
 					SE.tellPreview( { type: 'builder-edit-text', id: first.clientId } );
 				}
 				if ( then ) { then( doc ); }
-			};
-			SE.reloadPreviewSoon();
+			}() );
+			refresh();
 		} );
 	}
 
@@ -1273,15 +1284,17 @@
 		var doc = docs[ id ];
 		if ( ! doc || doc.type !== 'id5_section' ) { return; }
 		saveThen( doc, function () {
+			// Moved on the page at once; put back if WordPress says no.
+			SE.tellPreview( { type: 'builder-move-root', id: id, step: step } );
+			selectSection( id );
+			SE.tellPreview( { type: 'builder-scroll', section: id } );
 			SE.setState( 'กำลังย้าย…', true );
 			ajax( 'id5_builder_move', { id: id, step: step } ).then( function ( result ) {
-				if ( result.success && result.data.moved ) {
-					SE.tellPreview( { type: 'builder-scroll', section: id } );
-					afterLoadOnce = function () { selectSection( id ); SE.tellPreview( { type: 'builder-scroll', section: id } ); };
-					SE.reloadPreviewSoon();
-				} else {
-					SE.setState( 'เผยแพร่แล้ว', false );
+				if ( ! result.success || ! result.data.moved ) {
+					SE.tellPreview( { type: 'builder-move-root', id: id, step: step === 'up' ? 'down' : 'up' } );
+					if ( ! result.success ) { window.alert( ( result.data && result.data.message ) || 'ย้ายไม่สำเร็จ' ); }
 				}
+				SE.setState( 'เผยแพร่แล้ว', false );
 			} );
 		} );
 	}
@@ -1291,19 +1304,24 @@
 		if ( ! doc ) { return; }
 		if ( ! window.confirm( 'ลบส่วนเนื้อหา "' + doc.title + '" ทั้งส่วนออกจากเว็บไซต์?\n\nส่วนนี้จะถูกย้ายไปถังขยะ และกู้คืนได้ภายใน 30 วัน' ) ) { return; }
 		SE.setState( 'กำลังลบ…', true );
+		// Gone from the page at once; shown again if WordPress says no.
+		SE.tellPreview( { type: 'builder-hide-root', id: id, hide: true } );
 		ajax( 'id5_item_delete', { target: 'post:' + id } ).then( function ( result ) {
 			if ( ! result.success ) {
+				SE.tellPreview( { type: 'builder-hide-root', id: id, hide: false } );
 				SE.setState( 'ลบไม่สำเร็จ', false );
 				window.alert( ( result.data && result.data.message ) || 'ลบไม่สำเร็จ' );
 				return;
 			}
 			delete docs[ id ];
+			onPage = onPage.filter( function ( x ) { return x !== id; } );
+			SE.tellPreview( { type: 'builder-remove-root', id: id } );
+			SE.setState( 'ลบแล้ว', false );
 			undoStack = undoStack.map( function ( e ) { return e.filter( function ( x ) { return x.id !== id; } ); } ).filter( function ( e ) { return e.length; } );
 			redoStack = [];
 			selected = null;
 			selectedDoc = null;
 			view = '';
-			SE.reloadPreviewSoon();
 			refresh();
 		} );
 	}

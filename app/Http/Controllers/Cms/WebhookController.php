@@ -35,50 +35,49 @@ class WebhookController extends Controller
         'site.sync',
     ];
 
+    /** At most this many changes in one "batch" notification. */
+    private const BATCH_LIMIT = 50;
+
     public function __invoke(Request $request): JsonResponse
     {
-        $data = $request->validate([
-            'event'     => ['required', 'string', 'max:50'],
-            'post_type' => ['nullable', 'string', 'max:50'],
-            'post_id'   => ['nullable', 'integer', 'min:1'],
-            'taxonomy'  => ['nullable', 'string', 'max:50'],
-        ]);
+        // Several changes made by one action in WordPress (moving a section
+        // renumbers its neighbours, too) arrive together as one "batch", so
+        // they are applied one after the other by this one request.
+        if ($request->input('event') === 'batch') {
+            $request->validate([
+                'events'   => ['required', 'array', 'min:1', 'max:'.self::BATCH_LIMIT],
+                'events.*' => ['array'],
+            ]);
 
-        if (! in_array($data['event'], self::EVENTS, true)) {
-            return response()->json(['status' => 'ignored', 'reason' => 'unknown event']);
-        }
+            $changes = array_values(array_filter(array_map(
+                fn ($item) => is_array($item) ? $this->accept($item) : null,
+                (array) $request->input('events')
+            )));
+        } else {
+            $one = $this->accept($request->validate([
+                'event'     => ['required', 'string', 'max:50'],
+                'post_type' => ['nullable', 'string', 'max:50'],
+                'post_id'   => ['nullable', 'integer', 'min:1'],
+                'taxonomy'  => ['nullable', 'string', 'max:50'],
+            ]));
 
-        // `nullable` rules omit the key entirely when it was not sent, so these
-        // are read defensively rather than by direct index.
-        $postType = $data['post_type'] ?? null;
-        $postId   = $data['post_id'] ?? null;
-
-        if (str_starts_with($data['event'], 'post.')) {
-            if (blank($postType) || blank($postId)) {
-                return response()->json(['status' => 'ignored', 'reason' => 'incomplete event'], 422);
+            if (is_string($one)) {
+                return response()->json(['status' => 'ignored', 'reason' => $one], $one === 'incomplete event' ? 422 : 200);
             }
 
-            // Only post types this application actually maps are queued, so a
-            // notification about an unrelated WordPress post does nothing.
-            if (! config("cms.mappers.{$postType}")) {
-                return response()->json(['status' => 'ignored', 'reason' => 'unmapped type']);
-            }
+            $changes = [$one];
         }
 
-        // For a category change, carry the taxonomy name in the type slot so
-        // only the content that uses it is refreshed.
-        if ($data['event'] === 'terms.updated') {
-            $postType = $data['taxonomy'] ?? null;
-        }
+        $changes = array_values(array_filter($changes, 'is_array'));
 
-        Log::channel('cms')->info('Webhook accepted.', [
-            'event'     => $data['event'],
-            'post_type' => $postType,
-            'post_id'   => $postId,
-        ]);
+        if (! $changes) {
+            return response()->json(['status' => 'ignored', 'reason' => 'nothing to apply']);
+        }
 
         if (config('cms.sync.mode') === 'queue') {
-            SyncCmsChange::dispatch($data['event'], $postType, $postId);
+            foreach ($changes as [$event, $postType, $postId]) {
+                SyncCmsChange::dispatch($event, $postType, $postId);
+            }
 
             return $this->acknowledge('queued');
         }
@@ -88,24 +87,72 @@ class WebhookController extends Controller
         // waits on the sync), and the website updates without a separate queue
         // worker having to be kept alive — one less thing that can stop
         // silently and leave edits not appearing.
-        app()->terminating(function () use ($data, $postType, $postId) {
-            try {
-                (new SyncCmsChange($data['event'], $postType, $postId))->handle();
-            } catch (Throwable $e) {
-                Log::channel('cms')->warning('Immediate sync failed; queued for retry (the scheduled reconcile also covers it).', [
-                    'event'     => $data['event'],
-                    'post_type' => $postType,
-                    'post_id'   => $postId,
-                    'error'     => $e->getMessage(),
-                ]);
+        app()->terminating(function () use ($changes) {
+            foreach ($changes as [$event, $postType, $postId]) {
+                try {
+                    (new SyncCmsChange($event, $postType, $postId))->handle();
+                } catch (Throwable $e) {
+                    Log::channel('cms')->warning('Immediate sync failed; queued for retry (the scheduled reconcile also covers it).', [
+                        'event'     => $event,
+                        'post_type' => $postType,
+                        'post_id'   => $postId,
+                        'error'     => $e->getMessage(),
+                    ]);
 
-                // If a queue worker is running it retries; if not, the hourly
-                // `cms:pull` picks the change up. Either way nothing is lost.
-                rescue(fn () => SyncCmsChange::dispatch($data['event'], $postType, $postId)->delay(30), report: false);
+                    // If a queue worker is running it retries; if not, the hourly
+                    // `cms:pull` picks the change up. Either way nothing is lost.
+                    rescue(fn () => SyncCmsChange::dispatch($event, $postType, $postId)->delay(30), report: false);
+                }
             }
         });
 
         return $this->acknowledge('accepted');
+    }
+
+    /**
+     * Check one change: [event, type, id] to apply, or the reason it is
+     * ignored.
+     *
+     * @return array{0: string, 1: ?string, 2: ?int}|string
+     */
+    private function accept(array $data): array|string
+    {
+        $event = is_string($data['event'] ?? null) ? $data['event'] : '';
+
+        if (! in_array($event, self::EVENTS, true)) {
+            return 'unknown event';
+        }
+
+        // `nullable` rules omit the key entirely when it was not sent, so these
+        // are read defensively rather than by direct index.
+        $postType = isset($data['post_type']) && is_string($data['post_type']) && strlen($data['post_type']) <= 50 ? $data['post_type'] : null;
+        $postId   = isset($data['post_id']) && filter_var($data['post_id'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) !== false ? (int) $data['post_id'] : null;
+
+        if (str_starts_with($event, 'post.')) {
+            if (blank($postType) || blank($postId)) {
+                return 'incomplete event';
+            }
+
+            // Only post types this application actually maps are queued, so a
+            // notification about an unrelated WordPress post does nothing.
+            if (! config("cms.mappers.{$postType}")) {
+                return 'unmapped type';
+            }
+        }
+
+        // For a category change, carry the taxonomy name in the type slot so
+        // only the content that uses it is refreshed.
+        if ($event === 'terms.updated') {
+            $postType = isset($data['taxonomy']) && is_string($data['taxonomy']) && strlen($data['taxonomy']) <= 50 ? $data['taxonomy'] : null;
+        }
+
+        Log::channel('cms')->info('Webhook accepted.', [
+            'event'     => $event,
+            'post_type' => $postType,
+            'post_id'   => $postId,
+        ]);
+
+        return [$event, $postType, $postId];
     }
 
     /**
