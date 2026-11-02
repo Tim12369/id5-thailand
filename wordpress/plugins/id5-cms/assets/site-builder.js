@@ -50,8 +50,11 @@
 	var target = null;      // where "add content" puts things: { doc, parent, index }
 	var view = '';          // panel view: '', 'add', 'custom', 'section', 'layout', 'ask'
 	var tabFor = {};        // last tab used per kind of thing
-	var addTab = 'blocks';
+	var addTab = 'components';
 	var search = '';
+	var addOpen = false;    // the "ADD CONTENT" fly-out beside the panel
+	var addMode = 'list';   // 'list', 'layout' (choose a row layout) or 'ask'
+	var folded = {};        // groups closed in the fly-out
 	var undoStack = [];
 	var redoStack = [];
 	var typing = null;      // { doc, before } while text is being typed in the preview
@@ -632,6 +635,9 @@
 		selected = at ? clientId : null;
 		if ( at ) { selectedDoc = at.doc.id; }
 		view = at ? 'custom' : ( view === 'custom' ? '' : view );
+		// With "ADD CONTENT" open, what is clicked on the page is where
+		// the next thing goes.
+		if ( addOpen && addMode === 'list' ) { target = defaultTarget(); }
 		highlight();
 		refresh();
 	}
@@ -682,6 +688,7 @@
 	 * section stays made of rows and columns.
 	 */
 	function insert( t, blocks, then ) {
+		closeAdd();
 		if ( ! t || ! docs[ t.doc ] ) {
 			var slot = slots.filter( function ( s ) { return s.position === 'bottom'; } )[ 0 ] || slots[ 0 ];
 			if ( ! slot ) {
@@ -816,9 +823,10 @@
 	}
 
 	function ask( title, label, hint, check, done ) {
-		view = 'ask';
 		askSpec = { title: title, label: label, hint: hint, check: check, done: done };
-		refresh();
+		addOpen = true;
+		addMode = 'ask';
+		drawFlyout();
 	}
 
 	var askSpec = null;
@@ -835,51 +843,53 @@
 
 	// Each tile: key, label, dashicon, words to search by, and how to make it.
 	var TILES = {
-		blocks: [
-			{ k: 'columns', l: 'คอลัมน์ (แถว)', i: 'columns', w: 'row columns layout grid แถว คอลัมน์', row: true, make: function ( done ) { pickLayout( done ); } },
-			{ k: 'text', l: 'ข้อความ', i: 'editor-paragraph', w: 'text paragraph ข้อความ ย่อหน้า', make: function ( done ) { done( [ text( 'ข้อความใหม่ คลิกเพื่อพิมพ์' ) ] ); } },
-			{ k: 'heading', l: 'หัวข้อ', i: 'heading', w: 'heading title หัวข้อ', make: function ( done ) { done( [ heading( 'หัวข้อใหม่', 2 ) ] ); } },
-			{ k: 'image', l: 'รูปภาพ', i: 'format-image', w: 'image picture photo รูป ภาพ', make: function ( done ) { media( 'image', false, function ( files ) { done( [ image( files[ 0 ] ) ] ); } ); } },
-			{ k: 'button', l: 'ปุ่ม', i: 'button', w: 'button ปุ่ม', make: function ( done ) { done( [ buttons( 'ปุ่มใหม่', '#' ) ] ); } },
-			{ k: 'link', l: 'ลิงก์', i: 'admin-links', w: 'link url ลิงก์', make: function ( done ) { done( [ text( link( 'ลิงก์ใหม่', '#' ), { className: 'id5-link' } ) ] ); } },
-			{ k: 'icon', l: 'ไอคอน', i: 'star-filled', w: 'icon ไอคอน สัญลักษณ์', make: function ( done ) { done( [ text( '', { className: 'id5-icon id5-icon-l ti ti-star', align: 'center', textColor: 'id5-blue' } ) ] ); } },
-			{ k: 'spacer', l: 'ระยะห่าง', i: 'image-flip-vertical', w: 'spacer space ระยะ ช่องว่าง', make: function ( done ) { done( [ make( 'core/spacer', { height: '40px' } ) ] ); } },
-			{ k: 'divider', l: 'เส้นคั่น', i: 'minus', w: 'divider separator line เส้น', make: function ( done ) { done( [ make( 'core/separator', { className: 'is-style-wide' } ) ] ); } },
-			{ k: 'video', l: 'วิดีโอ', i: 'video-alt3', w: 'video youtube วิดีโอ คลิป', make: function ( done ) {
+		basic: [
+			{ k: 'columns', l: 'Columns', th: 'คอลัมน์ (แถว)', i: 'columns', w: 'columns row columns layout grid แถว คอลัมน์', row: true, make: function ( done ) { pickLayout( done ); } },
+			{ k: 'text', l: 'Text', th: 'ข้อความ', i: 'editor-alignleft', w: 'text text paragraph ข้อความ ย่อหน้า', make: function ( done ) { done( [ text( 'ข้อความใหม่ คลิกเพื่อพิมพ์' ) ] ); } },
+			{ k: 'heading', l: 'Heading', th: 'หัวข้อ', i: 'heading', w: 'heading heading title หัวข้อ', make: function ( done ) { done( [ heading( 'หัวข้อใหม่', 2 ) ] ); } },
+			{ k: 'image', l: 'Image', th: 'รูปภาพ', i: 'format-image', w: 'image image picture photo รูป ภาพ', make: function ( done ) { media( 'image', false, function ( files ) { done( [ image( files[ 0 ] ) ] ); } ); } },
+			{ k: 'button', l: 'Button', th: 'ปุ่ม', i: 'button', w: 'button button ปุ่ม', make: function ( done ) { done( [ buttons( 'ปุ่มใหม่', '#' ) ] ); } },
+			{ k: 'link', l: 'Link', th: 'ลิงก์', i: 'admin-links', w: 'link link url ลิงก์', make: function ( done ) { done( [ text( link( 'ลิงก์ใหม่', '#' ), { className: 'id5-link' } ) ] ); } },
+			{ k: 'icon', l: 'Icon', th: 'ไอคอน', i: 'smiley', w: 'icon icon ไอคอน สัญลักษณ์', make: function ( done ) { done( [ text( '', { className: 'id5-icon id5-icon-l ti ti-star', align: 'center', textColor: 'id5-blue' } ) ] ); } },
+			{ k: 'spacer', l: 'Spacer', th: 'ระยะห่าง', i: 'sort', w: 'spacer spacer space ระยะ ช่องว่าง', make: function ( done ) { done( [ make( 'core/spacer', { height: '40px' } ) ] ); } },
+			{ k: 'divider', l: 'Divider', th: 'เส้นคั่น', i: 'minus', w: 'divider divider separator line เส้น', make: function ( done ) { done( [ make( 'core/separator', { className: 'is-style-wide' } ) ] ); } },
+			{ k: 'video', l: 'Video', th: 'วิดีโอ YouTube', i: 'video-alt2', w: 'video video youtube วิดีโอ คลิป', make: function ( done ) {
 				ask( 'เพิ่มวิดีโอ', 'ลิงก์วิดีโอ YouTube', 'เช่น https://www.youtube.com/watch?v=… หรือ https://youtu.be/…', function ( v ) { return youtube( v ) ? '' : 'ต้องเป็นลิงก์ YouTube'; }, function ( v ) { done( [ video( youtube( v ) ) ] ); } );
 			} },
-			{ k: 'pdf', l: 'ไฟล์ PDF', i: 'pdf', w: 'pdf file document ไฟล์ เอกสาร', make: function ( done ) { media( 'pdf', false, function ( files ) { done( [ pdf( files[ 0 ] ) ] ); } ); } },
-			{ k: 'list', l: 'รายการ', i: 'editor-ul', w: 'list bullet รายการ', make: function ( done ) { done( [ list( [ 'รายการที่ 1', 'รายการที่ 2', 'รายการที่ 3' ] ) ] ); } },
-			{ k: 'table', l: 'ตาราง', i: 'editor-table', w: 'table ตาราง', make: function ( done ) { done( [ table( 3, 3, true ) ] ); } },
-			{ k: 'quote', l: 'คำพูด', i: 'format-quote', w: 'quote คำพูด อ้างอิง', make: function ( done ) { done( [ make( 'core/quote', { citation: rich( 'ผู้กล่าว' ) }, [ text( 'ข้อความที่ยกมา' ) ] ) ] ); } },
-			{ k: 'box', l: 'กล่อง', i: 'screenoptions', w: 'box group container กล่อง', make: function ( done ) { done( [ make( 'core/group', { className: 'id5-card' }, [ heading( 'หัวข้อกล่อง', 3 ), text( 'ข้อความในกล่อง' ) ] ) ] ); } }
+			{ k: 'pdf', l: 'PDF', th: 'ไฟล์ PDF', i: 'pdf', w: 'pdf pdf file document ไฟล์ เอกสาร', make: function ( done ) { media( 'pdf', false, function ( files ) { done( [ pdf( files[ 0 ] ) ] ); } ); } },
+			{ k: 'list', l: 'List', th: 'รายการ', i: 'editor-ul', w: 'list list bullet รายการ', make: function ( done ) { done( [ list( [ 'รายการที่ 1', 'รายการที่ 2', 'รายการที่ 3' ] ) ] ); } },
+			{ k: 'table', l: 'Table', th: 'ตาราง', i: 'editor-table', w: 'table table ตาราง', make: function ( done ) { done( [ table( 3, 3, true ) ] ); } },
+			{ k: 'quote', l: 'Quote', th: 'คำพูด', i: 'format-quote', w: 'quote quote คำพูด อ้างอิง', make: function ( done ) { done( [ make( 'core/quote', { citation: rich( 'ผู้กล่าว' ) }, [ text( 'ข้อความที่ยกมา' ) ] ) ] ); } },
+			{ k: 'box', l: 'Box', th: 'กล่อง', i: 'screenoptions', w: 'box box group container กล่อง', make: function ( done ) { done( [ make( 'core/group', { className: 'id5-card' }, [ heading( 'หัวข้อกล่อง', 3 ), text( 'ข้อความในกล่อง' ) ] ) ] ); } }
 		],
 		components: [
-			{ k: 'tabs', l: 'แท็บ', i: 'index-card', w: 'tabs แท็บ', make: function ( done ) { done( [ make( 'core/group', { className: 'id5-tabs' }, [ tab( 'แท็บที่ 1' ), tab( 'แท็บที่ 2' ), tab( 'แท็บที่ 3' ) ] ) ] ); } },
-			{ k: 'carousel', l: 'ภาพหมุน (Carousel)', i: 'images-alt2', w: 'carousel ภาพหมุน รูป', make: function ( done ) { media( 'image', true, function ( files ) { done( [ make( 'core/group', { className: 'id5-carousel' }, files.map( function ( f ) { return image( f ); } ) ) ] ); } ); } },
-			{ k: 'slider', l: 'สไลด์ภาพ (Slider)', i: 'slides', w: 'slider slideshow สไลด์ รูป', make: function ( done ) { media( 'image', true, function ( files ) { done( [ make( 'core/group', { className: 'id5-slider id5-autoplay' }, files.map( function ( f ) { return image( f ); } ) ) ] ); } ); } },
-			{ k: 'pricing', l: 'การ์ดราคา (Pricing)', i: 'money-alt', w: 'pricing price ราคา ค่าธรรมเนียม การ์ด', make: function ( done ) {
+			{ k: 'tabs', l: 'Tabs', th: 'แท็บ', i: 'index-card', w: 'tabs tabs แท็บ', make: function ( done ) { done( [ make( 'core/group', { className: 'id5-tabs' }, [ tab( 'แท็บที่ 1' ), tab( 'แท็บที่ 2' ), tab( 'แท็บที่ 3' ) ] ) ] ); } },
+			{ k: 'carousel', l: 'Carousel', th: 'ภาพหมุน', i: 'images-alt2', w: 'carousel carousel ภาพหมุน รูป', make: function ( done ) { media( 'image', true, function ( files ) { done( [ make( 'core/group', { className: 'id5-carousel' }, files.map( function ( f ) { return image( f ); } ) ) ] ); } ); } },
+			{ k: 'slider', l: 'Slider', th: 'สไลด์ภาพ', i: 'slides', w: 'slider slider slideshow สไลด์ รูป', make: function ( done ) { media( 'image', true, function ( files ) { done( [ make( 'core/group', { className: 'id5-slider id5-autoplay' }, files.map( function ( f ) { return image( f ); } ) ) ] ); } ); } },
+			{ k: 'pricing', l: 'Pricing', th: 'การ์ดราคา', i: 'tag', w: 'pricing pricing price ราคา ค่าธรรมเนียม การ์ด', make: function ( done ) {
 				done( [ make( 'core/columns', { className: 'id5-equal-height' }, [
 					make( 'core/column', {}, [ card( 'แบบที่ 1', '฿500', 'ต่อครั้ง' ) ] ),
 					make( 'core/column', {}, [ card( 'แบบที่ 2', '฿1,000', 'ต่อครั้ง', true ) ] ),
 					make( 'core/column', {}, [ card( 'แบบที่ 3', '฿1,900', 'ต่อครั้ง' ) ] )
 				] ) ] );
 			} },
-			{ k: 'pricetable', l: 'ตารางราคา (Pricing Table)', i: 'editor-table', w: 'pricing table ตารางราคา ค่าธรรมเนียม', make: function ( done ) {
+			{ k: 'pricetable', l: 'Pricing Table', th: 'ตารางราคา', i: 'editor-table', w: 'pricing table pricing table ตารางราคา ค่าธรรมเนียม', make: function ( done ) {
 				done( [ table( 4, 3, true, [ [ 'รายการ', 'ค่าธรรมเนียม', 'หมายเหตุ' ], [ 'บริการที่ 1', '฿500', '' ], [ 'บริการที่ 2', '฿1,000', '' ], [ 'บริการที่ 3', '฿1,900', '' ] ] ) ] );
 			} },
-			{ k: 'collage', l: 'ภาพคอลลาจ', i: 'format-gallery', w: 'image collage gallery คอลลาจ แกลเลอรี รูป', make: function ( done ) { media( 'image', true, function ( files ) { done( [ make( 'core/group', { className: 'id5-collage' }, files.map( function ( f ) { return image( f ); } ) ) ] ); } ); } },
-			{ k: 'accordion', l: 'แอคคอร์เดียน', i: 'list-view', w: 'accordion faq แอคคอร์เดียน พับ', make: function ( done ) { done( [ make( 'core/group', { className: 'id5-accordion' }, [ fold( 'หัวข้อที่ 1' ), fold( 'หัวข้อที่ 2' ), fold( 'หัวข้อที่ 3' ) ] ) ] ); } },
-			{ k: 'accordionmenu', l: 'เมนูแบบพับ (Accordion menu)', i: 'menu-alt', w: 'accordion menu เมนู พับ', make: function ( done ) { done( [ make( 'core/group', { className: 'id5-accordion-menu' }, [ fold( 'เมนูที่ 1', [ menuList() ] ), fold( 'เมนูที่ 2', [ menuList() ] ) ] ) ] ); } },
-			{ k: 'dropdown', l: 'เมนูดรอปดาวน์', i: 'arrow-down-alt2', w: 'dropdown menu เมนู ดรอปดาวน์', make: function ( done ) { done( [ make( 'core/details', { className: 'id5-dropdown', summary: rich( 'เมนู' ) }, [ menuList() ] ) ] ); } },
-			{ k: 'vmenu', l: 'เมนูแนวตั้ง', i: 'menu', w: 'vertical menu เมนู แนวตั้ง', make: function ( done ) { done( [ menuList() ] ); } },
-			{ k: 'map', l: 'แผนที่', i: 'location-alt', w: 'map google แผนที่ ที่ตั้ง', make: function ( done ) {
+			{ k: 'collage', l: 'Image Collage', th: 'ภาพคอลลาจ', i: 'format-gallery', w: 'image collage image collage gallery คอลลาจ แกลเลอรี รูป', make: function ( done ) { media( 'image', true, function ( files ) { done( [ make( 'core/group', { className: 'id5-collage' }, files.map( function ( f ) { return image( f ); } ) ) ] ); } ); } },
+			{ k: 'accordion', l: 'Accordion', th: 'แอคคอร์เดียน', i: 'list-view', w: 'accordion accordion faq แอคคอร์เดียน พับ', make: function ( done ) { done( [ make( 'core/group', { className: 'id5-accordion' }, [ fold( 'หัวข้อที่ 1' ), fold( 'หัวข้อที่ 2' ), fold( 'หัวข้อที่ 3' ) ] ) ] ); } },
+			{ k: 'accordionmenu', l: 'Accordion menu', th: 'เมนูแบบพับ', i: 'menu-alt3', w: 'accordion menu accordion menu เมนู พับ', make: function ( done ) { done( [ make( 'core/group', { className: 'id5-accordion-menu' }, [ fold( 'เมนูที่ 1', [ menuList() ] ), fold( 'เมนูที่ 2', [ menuList() ] ) ] ) ] ); } },
+			{ k: 'dropdown', l: 'Dropdown menu', th: 'เมนูดรอปดาวน์', i: 'arrow-down-alt2', w: 'dropdown menu dropdown menu เมนู ดรอปดาวน์', make: function ( done ) { done( [ make( 'core/details', { className: 'id5-dropdown', summary: rich( 'เมนู' ) }, [ menuList() ] ) ] ); } },
+			{ k: 'vmenu', l: 'Vertical menu', th: 'เมนูแนวตั้ง', i: 'menu', w: 'vertical menu vertical menu เมนู แนวตั้ง', make: function ( done ) { done( [ menuList() ] ); } },
+			{ k: 'map', l: 'Map', th: 'แผนที่', i: 'location', w: 'map map google แผนที่ ที่ตั้ง', make: function ( done ) {
 				ask( 'เพิ่มแผนที่', 'สถานที่หรือที่อยู่', 'เช่น "สำนักงานตรวจคนเข้าเมือง แจ้งวัฒนะ" ระบบจะแสดงแผนที่ Google ของสถานที่นี้', function ( v ) { return v.trim() ? '' : 'กรุณาพิมพ์สถานที่'; }, function ( v ) { done( [ map( v.trim() ) ] ); } );
 			} },
-			{ k: 'social', l: 'ไอคอนโซเชียล', i: 'share', w: 'social icons facebook line youtube โซเชียล', make: function ( done ) {
+			{ k: 'social', l: 'Social Icons', th: 'ไอคอนโซเชียล', i: 'thumbs-up', w: 'social icons social icons facebook line youtube โซเชียล', make: function ( done ) {
 				done( [ list( [ link( 'Facebook', 'https://www.facebook.com/' ), link( 'LINE', 'https://line.me/' ), link( 'YouTube', 'https://www.youtube.com/' ), link( 'X', 'https://x.com/' ) ], { className: 'id5-social' } ) ] );
 			} },
-			{ k: 'imagetext', l: 'รูปคู่ข้อความ', i: 'align-pull-left', w: 'image text รูป ข้อความ', make: function ( done ) {
+		],
+		sections: [
+			{ k: 'imagetext', l: 'Image + Text', th: 'รูปคู่ข้อความ', i: 'align-pull-left', w: 'image + text image text รูป ข้อความ', make: function ( done ) {
 				media( 'image', false, function ( files ) {
 					done( [ make( 'core/columns', { verticalAlignment: 'center' }, [
 						make( 'core/column', {}, [ image( files[ 0 ], { className: 'id5-rounded' } ) ] ),
@@ -887,15 +897,23 @@
 					] ) ] );
 				} );
 			} },
-			{ k: 'cards', l: 'การ์ด 3 ใบ', i: 'grid-view', w: 'cards features การ์ด', make: function ( done ) {
+			{ k: 'textimage', l: 'Text + Image', th: 'ข้อความคู่รูป', i: 'align-pull-right', w: 'text image ข้อความ รูป', make: function ( done ) {
+				media( 'image', false, function ( files ) {
+					done( [ make( 'core/columns', { verticalAlignment: 'center' }, [
+						make( 'core/column', {}, [ heading( 'หัวข้อ', 2 ), text( 'คำอธิบาย คลิกเพื่อแก้ไข' ), buttons( 'อ่านต่อ', '#' ) ] ),
+						make( 'core/column', {}, [ image( files[ 0 ], { className: 'id5-rounded' } ) ] )
+					] ) ] );
+				} );
+			} },
+			{ k: 'cards', l: '3 Cards', th: 'การ์ด 3 ใบ', i: 'grid-view', w: '3 cards cards features การ์ด', make: function ( done ) {
 				done( [ make( 'core/columns', { className: 'id5-equal-height' }, [ 1, 2, 3 ].map( function ( n ) {
 					return make( 'core/column', {}, [ make( 'core/group', { className: 'id5-card' }, [ text( '', { className: 'id5-icon id5-icon-m ti ti-' + [ 'id', 'file-text', 'clock' ][ n - 1 ], textColor: 'id5-blue' } ), heading( 'หัวข้อที่ ' + n, 3 ), text( 'คำอธิบายสั้น ๆ' ) ] ) ] );
 				} ) ) ] );
 			} },
-			{ k: 'cta', l: 'แถบเชิญชวน', i: 'megaphone', w: 'cta call to action banner เชิญชวน', make: function ( done ) {
+			{ k: 'cta', l: 'Call to action', th: 'แถบเชิญชวน', i: 'megaphone', w: 'call to action cta call to action banner เชิญชวน', make: function ( done ) {
 				done( [ make( 'core/group', { className: 'id5-pad-l id5-rounded', backgroundColor: 'id5-blue', textColor: 'id5-white' }, [ heading( 'หัวข้อเชิญชวน', 2, { textAlign: 'center', textColor: 'id5-white' } ), text( 'ข้อความสั้น ๆ', { align: 'center' } ), make( 'core/buttons', { className: 'id5-justify-center' }, [ make( 'core/button', { text: rich( 'ติดต่อเรา' ), url: '/contact', backgroundColor: 'id5-gold' } ) ] ) ] ) ] );
 			} },
-			{ k: 'pdfs', l: 'รายการไฟล์ PDF', i: 'media-document', w: 'pdf files documents ไฟล์ เอกสาร หลายไฟล์', make: function ( done ) { media( 'pdf', true, function ( files ) { done( files.map( function ( f ) { var b = pdf( f ); b.attributes.displayPreview = false; return b; } ) ); } ); } }
+			{ k: 'pdfs', l: 'PDF downloads', th: 'รายการไฟล์ PDF', i: 'media-document', w: 'pdf downloads pdf files documents ไฟล์ เอกสาร หลายไฟล์', make: function ( done ) { media( 'pdf', true, function ( files ) { done( files.map( function ( f ) { var b = pdf( f ); b.attributes.displayPreview = false; return b; } ) ); } ); } }
 		]
 	};
 
@@ -916,7 +934,7 @@
 	}
 
 	function allTiles() {
-		return TILES.blocks.concat( TILES.components );
+		return TILES.basic.concat( TILES.components, TILES.sections );
 	}
 
 	function tileByKey( key ) {
@@ -926,7 +944,7 @@
 	function useTile( tile, at ) {
 		var t = at || target || defaultTarget();
 		tile.make( function ( blocks ) {
-			view = 'add';
+			addMode = 'list';
 			insert( t, blocks );
 		} );
 	}
@@ -951,8 +969,9 @@
 
 	function pickLayout( done ) {
 		layoutDone = done;
-		view = 'layout';
-		refresh();
+		addOpen = true;
+		addMode = 'layout';
+		drawFlyout();
 	}
 
 	function layoutPreview( widths ) {
@@ -1293,10 +1312,18 @@
 
 	function openAdd( t ) {
 		target = t || defaultTarget();
-		view = 'add';
-		refresh();
-		var input = panel.querySelector( '.id5-sb__search' );
+		addOpen = true;
+		addMode = 'list';
+		drawFlyout();
+		var input = flyout.querySelector( '.id5-sba__search input' );
 		if ( input ) { input.focus(); }
+	}
+
+	function closeAdd() {
+		addOpen = false;
+		addMode = 'list';
+		layoutDone = null;
+		drawFlyout();
 	}
 
 	function closePanel() {
@@ -1324,19 +1351,19 @@
 		panel.textContent = '';
 		launcher.hidden = ! onPage.length && ! slots.length;
 
+		updateFoot();
+
 		if ( ! view ) { return; }
 
 		var bar = h( 'div', 'id5-sb__bar' );
 		var back = h( 'button', 'id5-sb__back' );
 		back.type = 'button';
 		back.appendChild( icon( 'arrow-left-alt2' ) );
-		back.appendChild( document.createTextNode( view === 'layout' || view === 'ask' ? 'ยกเลิก' : 'กลับ' ) );
-		back.addEventListener( 'click', function () {
-			if ( view === 'layout' || view === 'ask' ) { view = selected ? 'custom' : 'add'; refresh(); } else { closePanel(); }
-		} );
+		back.appendChild( document.createTextNode( 'กลับ' ) );
+		back.addEventListener( 'click', closePanel );
 		bar.appendChild( back );
 
-		if ( view !== 'add' ) {
+		if ( view ) {
 			var addButton = h( 'button', 'button id5-sb__add-open' );
 			addButton.type = 'button';
 			addButton.appendChild( icon( 'plus-alt2' ) );
@@ -1349,9 +1376,6 @@
 		var body = h( 'div', 'id5-sb__body' );
 		panel.appendChild( body );
 
-		if ( view === 'add' ) { drawAdd( body ); }
-		if ( view === 'layout' ) { drawLayouts( body ); }
-		if ( view === 'ask' ) { drawAsk( body ); }
 		if ( view === 'section' ) { drawSection( body ); }
 		if ( view === 'custom' ) {
 			var at = selected ? locate( selected ) : null;
@@ -1359,75 +1383,140 @@
 		}
 	}
 
-	// "เพิ่มเนื้อหา" — Blocks / Components, with search.
-	function drawAdd( body ) {
-		body.appendChild( h( 'h2', 'id5-sb__title', 'เพิ่มเนื้อหา' ) );
+	// ── "ADD CONTENT": the fly-out beside the panel ─────────────────────
+	// Laid out like the page builder the office knows (Colibri): two tabs,
+	// a search box, and groups of things to click or drag onto the page.
 
-		var tabs = h( 'div', 'id5-sb__tabs' );
-		[ [ 'blocks', 'บล็อก' ], [ 'components', 'ชุดสำเร็จรูป' ] ].forEach( function ( pair ) {
-			var b = h( 'button', addTab === pair[ 0 ] && ! search ? 'is-active' : '', pair[ 1 ] );
-			b.type = 'button';
-			b.addEventListener( 'click', function () { addTab = pair[ 0 ]; search = ''; refresh(); } );
-			tabs.appendChild( b );
-		} );
-		body.appendChild( tabs );
+	var flyout = h( 'div', 'id5-sba' );
+	flyout.id = 'id5-sba';
+	flyout.hidden = true;
+	flyout.setAttribute( 'role', 'dialog' );
+	flyout.setAttribute( 'aria-label', 'ADD CONTENT เพิ่มเนื้อหา' );
+	root.appendChild( flyout );
 
-		var input = h( 'input', 'id5-sb__search' );
-		input.type = 'search';
-		input.placeholder = 'ค้นหา เช่น รูป, PDF, แท็บ…';
-		input.value = search;
-		body.appendChild( input );
-
-		var where = h( 'p', 'id5-sb__where' );
-		where.appendChild( icon( 'location' ) );
-		where.appendChild( document.createTextNode( 'จะเพิ่มที่: ' + describeTarget( target ) ) );
-		body.appendChild( where );
-
-		var grid = h( 'div', 'id5-sb__tiles' );
-		body.appendChild( grid );
-
-		function fill() {
-			grid.textContent = '';
-			var q = search.trim().toLowerCase();
-			var tiles = q ? allTiles().filter( function ( t ) { return ( t.l + ' ' + t.w ).toLowerCase().indexOf( q ) >= 0; } ) : TILES[ addTab ];
-
-			if ( ! tiles.length ) { grid.appendChild( h( 'p', 'id5-sb__note', 'ไม่พบ "' + search + '"' ) ); }
-
-			tiles.forEach( function ( tile ) {
-				var b = h( 'button', 'id5-sb__tile' );
-				b.type = 'button';
-				b.draggable = true;
-				b.title = 'คลิกเพื่อเพิ่ม หรือลากไปวางบนหน้าเว็บ';
-				b.appendChild( icon( tile.i ) );
-				b.appendChild( h( 'span', '', tile.l ) );
-				b.addEventListener( 'click', function () { useTile( tile ); } );
-				b.addEventListener( 'dragstart', function ( event ) {
-					dragTile = tile;
-					event.dataTransfer.effectAllowed = 'copy';
-					event.dataTransfer.setData( 'text/plain', 'id5:' + tile.k );
-					SE.tellPreview( { type: 'builder-drag-start', row: !! tile.row, label: tile.l } );
-				} );
-				b.addEventListener( 'dragend', function () {
-					SE.tellPreview( { type: 'builder-drag-end' } );
-					setTimeout( function () { dragTile = null; }, 500 );
-				} );
-				grid.appendChild( b );
-			} );
-		}
-
-		input.addEventListener( 'input', function () {
-			search = input.value;
-			tabs.querySelectorAll( 'button' ).forEach( function ( b, i ) { b.classList.toggle( 'is-active', ! search && [ 'blocks', 'components' ][ i ] === addTab ); } );
-			fill();
-		} );
-
-		fill();
-		body.appendChild( h( 'p', 'id5-sb__note', 'คลิกเพื่อเพิ่มตรงตำแหน่งที่เลือก หรือลากไปวางบนหน้าเว็บตรงที่ต้องการ แล้วกด "เผยแพร่" ด้านบนเมื่อเสร็จ' ) );
+	function updateFoot() {
+		var foot = flyout.querySelector( '.id5-sba__foot' );
+		if ( foot ) { foot.textContent = 'จะเพิ่มที่: ' + describeTarget( target ); }
 	}
 
-	function drawLayouts( body ) {
-		body.appendChild( h( 'h2', 'id5-sb__title', 'เลือกรูปแบบแถว' ) );
-		body.appendChild( h( 'p', 'id5-sb__note', 'แถวแบ่งเป็นคอลัมน์ได้ 1–6 คอลัมน์ ปรับความกว้างได้ภายหลังโดยลากเส้นระหว่างคอลัมน์' ) );
+	function tileButton( tile ) {
+		var b = h( 'button', 'id5-sba__item' );
+		b.type = 'button';
+		b.draggable = true;
+		b.title = tile.th + ' — คลิกเพื่อเพิ่ม หรือลากไปวางบนหน้าเว็บ';
+		b.setAttribute( 'data-tile', tile.k );
+		b.appendChild( icon( tile.i ) );
+		b.appendChild( h( 'span', '', tile.l ) );
+		b.addEventListener( 'click', function () { useTile( tile ); } );
+		b.addEventListener( 'dragstart', function ( event ) {
+			dragTile = tile;
+			event.dataTransfer.effectAllowed = 'copy';
+			event.dataTransfer.setData( 'text/plain', 'id5:' + tile.k );
+			SE.tellPreview( { type: 'builder-drag-start', row: !! tile.row, label: tile.l } );
+			// Let the page under the fly-out take the drop too (after the
+			// drag has begun: changing it during dragstart cancels the drag).
+			setTimeout( function () { root.classList.add( 'is-dragging-tile' ); }, 0 );
+		} );
+		b.addEventListener( 'dragend', function () {
+			root.classList.remove( 'is-dragging-tile' );
+			SE.tellPreview( { type: 'builder-drag-end' } );
+			setTimeout( function () { dragTile = null; }, 500 );
+		} );
+		return b;
+	}
+
+	function drawFlyout() {
+		flyout.hidden = ! addOpen;
+		root.classList.toggle( 'is-adding', addOpen );
+		flyout.textContent = '';
+		if ( ! addOpen ) { return; }
+
+		var head = h( 'div', 'id5-sba__head' );
+		head.appendChild( h( 'span', 'id5-sba__title', addMode === 'layout' ? 'CHOOSE ROW LAYOUT' : addMode === 'ask' ? askSpec.title : 'ADD CONTENT' ) );
+		var close = h( 'button', 'id5-sba__close' );
+		close.type = 'button';
+		close.title = 'ปิด';
+		close.setAttribute( 'aria-label', 'ปิด' );
+		close.appendChild( icon( 'dismiss' ) );
+		close.addEventListener( 'click', closeAdd );
+		head.appendChild( close );
+		flyout.appendChild( head );
+
+		if ( addMode === 'layout' ) { drawLayouts( flyout ); return; }
+		if ( addMode === 'ask' ) { drawAsk( flyout ); return; }
+
+		var tabs = h( 'div', 'id5-sba__tabs' );
+		[ [ 'blocks', 'Blocks', 'ชุดเนื้อหาสำเร็จรูปทั้งแถว' ], [ 'components', 'Components', 'ส่วนประกอบทีละชิ้น' ] ].forEach( function ( t ) {
+			var b = h( 'button', addTab === t[ 0 ] ? 'is-active' : '', t[ 1 ] );
+			b.type = 'button';
+			b.title = t[ 2 ];
+			b.addEventListener( 'click', function () { addTab = t[ 0 ]; search = ''; drawFlyout(); } );
+			tabs.appendChild( b );
+		} );
+		flyout.appendChild( tabs );
+
+		var searchBox = h( 'div', 'id5-sba__search' );
+		var input = h( 'input' );
+		input.type = 'search';
+		input.placeholder = addTab === 'blocks' ? 'Block search' : 'Component search';
+		input.value = search;
+		input.setAttribute( 'aria-label', 'ค้นหา' );
+		searchBox.appendChild( input );
+		flyout.appendChild( searchBox );
+
+		var list = h( 'div', 'id5-sba__list' );
+		flyout.appendChild( list );
+
+		function groupBox( key, title, tiles ) {
+			var group = h( 'div', 'id5-sba__group' + ( folded[ key ] ? ' is-folded' : '' ) );
+			var toggle = h( 'button', 'id5-sba__group-head' );
+			toggle.type = 'button';
+			toggle.setAttribute( 'aria-expanded', String( ! folded[ key ] ) );
+			toggle.appendChild( icon( 'arrow-down' ) );
+			toggle.appendChild( document.createTextNode( title ) );
+			toggle.addEventListener( 'click', function () { folded[ key ] = ! folded[ key ]; drawFlyout(); } );
+			group.appendChild( toggle );
+			var items = h( 'div', 'id5-sba__items' );
+			tiles.forEach( function ( tile ) { items.appendChild( tileButton( tile ) ); } );
+			group.appendChild( items );
+			list.appendChild( group );
+		}
+
+		function fill() {
+			list.textContent = '';
+			var q = search.trim().toLowerCase();
+			var match = function ( t ) { return ! q || ( t.l + ' ' + t.th + ' ' + t.w ).toLowerCase().indexOf( q ) >= 0; };
+
+			if ( q ) {
+				var found = allTiles().filter( match );
+				if ( found.length ) { groupBox( 'found', 'Results', found ); } else { list.appendChild( h( 'p', 'id5-sba__none', 'ไม่พบ "' + search + '"' ) ); }
+			} else if ( addTab === 'blocks' ) {
+				groupBox( 'sections', 'Ready-made rows', TILES.sections );
+			} else {
+				groupBox( 'basic', 'Basic', TILES.basic );
+				groupBox( 'components', 'Components', TILES.components );
+			}
+		}
+
+		input.addEventListener( 'input', function () { search = input.value; fill(); } );
+		input.addEventListener( 'keydown', function ( event ) { if ( event.key === 'Escape' ) { closeAdd(); } } );
+		fill();
+
+		flyout.appendChild( h( 'div', 'id5-sba__foot' ) );
+		updateFoot();
+	}
+
+	function backToList() {
+		addMode = 'list';
+		layoutDone = null;
+		drawFlyout();
+	}
+
+	function drawLayouts( holder ) {
+		var body = h( 'div', 'id5-sba__body' );
+		holder.appendChild( body );
+		body.appendChild( backLink() );
+		body.appendChild( h( 'p', 'id5-sb__note', 'เลือกรูปแบบแถว: แบ่งเป็นคอลัมน์ได้ 1–6 คอลัมน์ ปรับความกว้างได้ภายหลังโดยลากเส้นระหว่างคอลัมน์' ) );
 		var grid = h( 'div', 'id5-sb__layouts' );
 		LAYOUTS.forEach( function ( layout ) {
 			var b = h( 'button', 'id5-sb__layout' );
@@ -1437,17 +1526,29 @@
 			b.addEventListener( 'click', function () {
 				var done = layoutDone;
 				layoutDone = null;
-				view = 'add';
+				addMode = 'list';
 				if ( done ) { done( [ row( layout.w ) ] ); }
+				if ( addOpen ) { closeAdd(); }
 			} );
 			grid.appendChild( b );
 		} );
 		body.appendChild( grid );
 	}
 
-	function drawAsk( body ) {
+	function backLink() {
+		var back = h( 'button', 'id5-sb__back' );
+		back.type = 'button';
+		back.appendChild( icon( 'arrow-left-alt2' ) );
+		back.appendChild( document.createTextNode( 'ยกเลิก' ) );
+		back.addEventListener( 'click', backToList );
+		return back;
+	}
+
+	function drawAsk( holder ) {
 		var spec = askSpec;
-		body.appendChild( h( 'h2', 'id5-sb__title', spec.title ) );
+		var body = h( 'div', 'id5-sba__body' );
+		holder.appendChild( body );
+		body.appendChild( backLink() );
 		var form = h( 'form', 'id5-sb__ask' );
 		var label = h( 'label', 'id5-sb__ctl-title', spec.label );
 		var input = h( 'input', 'id5-sb__input' );
@@ -1465,7 +1566,7 @@
 			event.preventDefault();
 			var problem = spec.check( input.value );
 			if ( problem ) { error.textContent = problem; error.hidden = false; return; }
-			view = 'add';
+			addMode = 'list';
 			spec.done( input.value );
 		} );
 		body.appendChild( form );
@@ -1591,17 +1692,16 @@
 		} );
 		body.appendChild( crumbs );
 
-		var title = h( 'h2', 'id5-sb__title' );
-		title.appendChild( document.createTextNode( 'คุณกำลังปรับแต่ง ' ) );
-		title.appendChild( h( 'strong', '', labelOf( block ) ) );
-		body.appendChild( title );
+		body.appendChild( customHead( labelOf( block ), isContainer( block ) ? { doc: doc.id, parent: block.clientId, index: block.innerBlocks.length } : null ) );
 
-		var tabs = h( 'div', 'id5-sb__tabs' );
+		var tabs = h( 'div', 'id5-sb__tabs is-icons' );
 		var current = tabFor[ kind ] || 'layout';
 		var pane = h( 'div', 'id5-sb__pane' );
 
-		[ [ 'layout', 'เค้าโครง' ], [ 'style', 'สไตล์' ], [ 'advanced', 'ขั้นสูง' ] ].forEach( function ( pair ) {
-			var b = h( 'button', current === pair[ 0 ] ? 'is-active' : '', pair[ 1 ] );
+		[ [ 'layout', 'เค้าโครง', 'edit' ], [ 'style', 'สไตล์', 'art' ], [ 'advanced', 'ขั้นสูง', 'admin-generic' ] ].forEach( function ( pair ) {
+			var b = h( 'button', current === pair[ 0 ] ? 'is-active' : '' );
+			b.appendChild( icon( pair[ 2 ] ) );
+			b.appendChild( document.createTextNode( pair[ 1 ] ) );
 			b.type = 'button';
 			b.addEventListener( 'click', function () { tabFor[ kind ] = pair[ 0 ]; refresh(); } );
 			tabs.appendChild( b );
@@ -1845,6 +1945,23 @@
 		}
 	}
 
+	// "คุณกำลังปรับแต่ง / แถว" with the round blue + (add content), as in Colibri.
+	function customHead( name, into ) {
+		var head = h( 'div', 'id5-sb__custom-head' );
+		var words = h( 'div', 'id5-sb__custom-words' );
+		words.appendChild( h( 'span', 'id5-sb__custom-small', 'คุณกำลังปรับแต่ง' ) );
+		words.appendChild( h( 'strong', 'id5-sb__custom-name', name ) );
+		head.appendChild( words );
+		var plus = h( 'button', 'id5-sb__plus' );
+		plus.type = 'button';
+		plus.title = 'เพิ่มเนื้อหา (ADD CONTENT)';
+		plus.setAttribute( 'aria-label', 'เพิ่มเนื้อหา' );
+		plus.appendChild( icon( 'plus-alt2' ) );
+		plus.addEventListener( 'click', function () { openAdd( into || undefined ); } );
+		head.appendChild( plus );
+		return head;
+	}
+
 	function textNote( pane ) {
 		pane.appendChild( h( 'p', 'id5-sb__note is-tip', 'คลิกที่ข้อความบนหน้าเว็บเพื่อพิมพ์แก้ได้ทันที เลือกข้อความแล้วใช้แถบเครื่องมือเพื่อทำตัวหนา ตัวเอียง หรือใส่ลิงก์' ) );
 	}
@@ -2077,10 +2194,7 @@
 		if ( ! doc ) { view = ''; refresh(); return; }
 
 		body.appendChild( h( 'div', 'id5-sb__crumbs', doc.title ) );
-		var title = h( 'h2', 'id5-sb__title' );
-		title.appendChild( document.createTextNode( 'คุณกำลังปรับแต่ง ' ) );
-		title.appendChild( h( 'strong', '', doc.type === 'id5_page' ? 'หน้าเว็บ' : 'ส่วนเนื้อหา' ) );
-		body.appendChild( title );
+		body.appendChild( customHead( doc.type === 'id5_page' ? 'หน้าเว็บ' : 'ส่วนเนื้อหา', { doc: doc.id, parent: null, index: doc.blocks.length } ) );
 
 		var pane = h( 'div', 'id5-sb__pane' );
 		body.appendChild( pane );
@@ -2124,6 +2238,7 @@
 	redoButton.addEventListener( 'click', redo );
 
 	document.addEventListener( 'keydown', function ( event ) {
+		if ( event.key === 'Escape' && addOpen ) { closeAdd(); return; }
 		var tag = ( event.target && event.target.tagName ) || '';
 		if ( /^(INPUT|TEXTAREA|SELECT)$/.test( tag ) ) { return; }
 		var key = event.key.toLowerCase();

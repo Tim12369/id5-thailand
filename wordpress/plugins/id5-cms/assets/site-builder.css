@@ -641,3 +641,314 @@ textarea.id5-sb__input {
 	opacity: 0.35;
 	cursor: default;
 }
+
+/* ── "ADD CONTENT": the fly-out beside the panel (as in Colibri) ──────── */
+
+.id5-sba {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 320px;
+	z-index: 20;
+	display: flex;
+	flex-direction: column;
+	width: 340px;
+	border-right: 1px solid #dcdcde;
+	background: #fff;
+	box-shadow: 6px 0 18px rgba( 0, 0, 0, 0.12 );
+	font-size: 13px;
+}
+
+.id5-sba[hidden] {
+	display: none;
+}
+
+.id5-sba__head {
+	display: flex;
+	flex: 0 0 46px;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 12px 0 18px;
+	border-bottom: 1px solid #e2e4e7;
+}
+
+.id5-sba__title {
+	color: #23282d;
+	font-size: 13px;
+	font-weight: 500;
+	letter-spacing: 0.01em;
+}
+
+.id5-sba__close {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: #a7aaad;
+	cursor: pointer;
+}
+
+.id5-sba__close:hover {
+	color: #50575e;
+}
+
+.id5-sba__tabs {
+	display: flex;
+	flex: 0 0 auto;
+	border-bottom: 1px solid #e2e4e7;
+}
+
+.id5-sba__tabs button {
+	flex: 1;
+	height: 42px;
+	margin: 0;
+	border: 0;
+	border-left: 1px solid #e2e4e7;
+	background: #f1f2f4;
+	color: #8c8f94;
+	cursor: pointer;
+	font-size: 14px;
+}
+
+.id5-sba__tabs button:first-child {
+	border-left: 0;
+}
+
+.id5-sba__tabs button.is-active {
+	background: #fff;
+	color: #2287c9;
+}
+
+.id5-sba__tabs button:hover:not( .is-active ) {
+	color: #50575e;
+}
+
+.id5-sba__search {
+	flex: 0 0 auto;
+	padding: 14px 20px;
+	border-bottom: 1px solid #e2e4e7;
+}
+
+.id5-sba__search input {
+	width: 100%;
+	height: 40px;
+	padding: 0 12px;
+	border: 1px solid #dcdcde;
+	border-radius: 2px;
+	box-shadow: none;
+	font-size: 13px;
+}
+
+.id5-sba__search input:focus {
+	border-color: #2287c9;
+	box-shadow: 0 0 0 1px #2287c9;
+}
+
+.id5-sba__list {
+	flex: 1;
+	overflow-y: auto;
+	background: #f7f8f9;
+}
+
+.id5-sba__group-head {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	width: 100%;
+	padding: 13px 14px;
+	border: 0;
+	border-bottom: 1px solid #e2e4e7;
+	background: #f7f8f9;
+	color: #2287c9;
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: 500;
+	text-align: left;
+}
+
+.id5-sba__group-head .dashicons {
+	width: 14px;
+	height: 14px;
+	font-size: 14px;
+	transition: transform 0.15s;
+}
+
+.id5-sba__group.is-folded .id5-sba__group-head .dashicons {
+	transform: rotate( -90deg );
+}
+
+.id5-sba__group.is-folded .id5-sba__items {
+	display: none;
+}
+
+.id5-sba__items {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 4px 8px;
+	padding: 12px 20px 16px;
+	border-bottom: 1px solid #e2e4e7;
+}
+
+.id5-sba__item {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-height: 40px;
+	padding: 4px 10px;
+	border: 1px solid transparent;
+	border-radius: 2px;
+	background: transparent;
+	color: #3c434a;
+	cursor: grab;
+	font-size: 13px;
+	line-height: 1.25;
+	text-align: left;
+}
+
+.id5-sba__item:hover,
+.id5-sba__item:focus-visible {
+	border-color: #dcdcde;
+	background: #fff;
+	color: #1d2327;
+	outline: none;
+}
+
+.id5-sba__item .dashicons {
+	flex: 0 0 22px;
+	width: 22px;
+	height: 22px;
+	color: #2e6da4;
+	font-size: 22px;
+}
+
+.id5-sba__none {
+	margin: 0;
+	padding: 18px 20px;
+	color: #646970;
+}
+
+.id5-sba__foot {
+	flex: 0 0 auto;
+	padding: 8px 18px;
+	border-top: 1px solid #e2e4e7;
+	background: #fff;
+	color: #646970;
+	font-size: 12px;
+}
+
+.id5-sba__body {
+	flex: 1;
+	overflow-y: auto;
+	padding: 12px 18px 20px;
+}
+
+.id5-sba .id5-sb__back {
+	margin: 0 0 6px -6px;
+}
+
+/* ── "คุณกำลังปรับแต่ง / แถว" with the round + (as in Colibri) ───────── */
+
+.id5-sb__custom-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	margin: 0 0 12px;
+}
+
+.id5-sb__custom-words {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.id5-sb__custom-small {
+	color: #3c434a;
+	font-size: 12px;
+}
+
+.id5-sb__custom-name {
+	overflow: hidden;
+	color: #1d2327;
+	font-size: 20px;
+	font-weight: 300;
+	line-height: 1.3;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.id5-sb__plus {
+	display: flex;
+	flex: 0 0 44px;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: #2287c9;
+	box-shadow: 0 2px 6px rgba( 34, 135, 201, 0.45 );
+	color: #fff;
+	cursor: pointer;
+}
+
+.id5-sb__plus:hover {
+	background: #1b6fa6;
+}
+
+.id5-sb__plus .dashicons {
+	width: 26px;
+	height: 26px;
+	font-size: 26px;
+}
+
+.id5-sb__tabs.is-icons button {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 3px;
+	padding: 9px 4px 8px;
+	border-bottom: 0;
+	font-size: 11px;
+}
+
+.id5-sb__tabs.is-icons button .dashicons {
+	width: 18px;
+	height: 18px;
+	font-size: 18px;
+}
+
+.id5-sb__tabs.is-icons button.is-active {
+	background: #2287c9;
+	color: #fff;
+}
+
+.id5-se .id5-sb__launch.button .dashicons {
+	width: 20px;
+	height: 20px;
+	margin: 0;
+	font-size: 20px;
+	line-height: 1;
+	vertical-align: middle;
+}
+
+.id5-se .id5-sb__launch.button {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	white-space: nowrap;
+}
+
+/* While something is dragged from the fly-out, the page beneath shows through. */
+.id5-se.is-dragging-tile .id5-sba {
+	opacity: 0.25;
+	pointer-events: none;
+}

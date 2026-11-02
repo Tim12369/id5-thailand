@@ -23,7 +23,7 @@
     html.id5-building [data-id5-root] :is(iframe, object) { pointer-events: none; }
     html.id5-building [data-id5-root] a { cursor: default; }
     .id5b-hover-root { outline: 2px dashed #1d2327 !important; outline-offset: 12px; }
-    .id5b-hover-row { outline: 2px solid #2271b1 !important; outline-offset: 5px; }
+    .id5b-hover-row { outline: 1px solid #2287c9 !important; outline-offset: 3px; }
     .id5b-hover-col { outline: 1px dashed #d97706 !important; outline-offset: -1px; }
     .id5b-hover-comp { outline: 2px solid #7c3aed !important; outline-offset: 2px; }
     .id5b-sel { outline: 2px solid #f97316 !important; outline-offset: 3px; }
@@ -39,17 +39,19 @@
     .id5b-bar .id5b-label { padding: 0 8px; }
     .id5b-bar .id5b-drag { cursor: grab; }
     .id5b-bar--sec { background: #1d2327; }
-    .id5b-bar--row { background: #2271b1; }
+    .id5b-bar--row { height: 24px; gap: 1px; padding: 0 2px; border-radius: 2px; background: #2287c9; line-height: 24px; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+    .id5b-bar--row button { min-width: 26px; height: 24px; padding: 0 5px; }
+    .id5b-bar--row button i { font-size: 15px; }
     .id5b-bar--col { background: #f59e0b; color: #1d2327; }
     .id5b-bar--comp { background: #7c3aed; }
-    .id5b-menu { position: fixed; z-index: 2147482600; display: none; min-width: 200px; padding: 4px 0; border: 1px solid #dcdcde; border-radius: 4px;
+    .id5b-menu { position: fixed; z-index: 2147482600; display: none; min-width: 160px; padding: 4px 0; border: 1px solid #e2e4e7; border-radius: 2px;
         background: #fff; box-shadow: 0 6px 18px rgba(0,0,0,.18); font-size: 13px; }
-    .id5b-menu button { display: flex; align-items: center; gap: 8px; width: 100%; margin: 0; padding: 7px 14px; border: 0; background: none; color: #1d2327;
+    .id5b-menu button { display: block; width: 100%; margin: 0; padding: 8px 20px; border: 0; background: none; color: #3c434a; font-size: 13px; line-height: 1.4;
         cursor: pointer; font: inherit; text-align: left; }
-    .id5b-menu button:hover { background: #f0f6fc; color: #2271b1; }
+    .id5b-menu button:hover { background: #f3f4f5; color: #1d2327; }
     .id5b-menu button:disabled { opacity: .4; cursor: default; background: none; color: #1d2327; }
     .id5b-menu button.is-danger { color: #d63638; }
-    .id5b-menu hr { margin: 4px 0; border: 0; border-top: 1px solid #f0f0f1; }
+    .id5b-menu hr { margin: 4px 0; border: 0; border-top: 1px solid #e2e4e7; }
     .id5b-menu i { font-size: 16px; width: 16px; }
     .id5b-empty { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 76px; margin: 0; padding: 10px;
         border: 2px dashed #9ec2e6; border-radius: 10px; background: rgba(240,246,252,.75); color: #2271b1; cursor: pointer; font-size: 12px; font-weight: 600; }
@@ -153,16 +155,14 @@
         { act: 'section-delete', icon: 'trash', title: 'ลบส่วนนี้ทั้งส่วน' }
     ]);
     var rowBar = bar('row', [
-        { act: 'drag', icon: 'grip-vertical', cls: 'id5b-drag', title: 'ลากเพื่อย้ายแถว' },
-        { act: 'select', text: 'แถว', cls: 'id5b-label', title: 'เลือกแถวนี้' },
-        { act: 'add-column', icon: 'plus', title: 'เพิ่มคอลัมน์' },
-        { act: 'menu-row', icon: 'menu-2', title: 'ตัวเลือกของแถว' },
+        { act: 'add-column', icon: 'plus', title: 'เพิ่มคอลัมน์ (Add column)' },
+        { act: 'menu-row', icon: 'menu-2', title: 'ตัวเลือกของแถว — กดค้างแล้วลากเพื่อย้ายแถว' },
         { act: 'remove-column', icon: 'minus', title: 'ลดคอลัมน์ (ลบคอลัมน์สุดท้าย)' }
     ]);
     var colBar = bar('col', [
         { act: 'select', text: 'คอลัมน์', cls: 'id5b-label', title: 'เลือกคอลัมน์นี้' },
         { act: 'add-into', icon: 'plus', title: 'เพิ่มเนื้อหาในคอลัมน์นี้' },
-        { act: 'menu-col', icon: 'menu-2', title: 'ตัวเลือกของคอลัมน์' }
+        { act: 'menu-col', icon: 'menu-2', title: 'ตัวเลือกของคอลัมน์ (Column options)' }
     ]);
     var compBar = bar('comp', [
         { act: 'drag', icon: 'grip-vertical', cls: 'id5b-drag', title: 'ลากเพื่อย้าย' },
@@ -177,20 +177,23 @@
 
     var MENUS = {
         'menu-row': [
-            ['select', 'pointer', 'เลือก'], ['add-column', 'column-insert-right', 'เพิ่มคอลัมน์'], ['edit-row', 'adjustments-horizontal', 'แก้ไขแถว'],
-            ['duplicate', 'copy', 'ทำสำเนา'], '-', ['row-above', 'row-insert-top', 'เพิ่มแถวด้านบน'], ['row-below', 'row-insert-bottom', 'เพิ่มแถวด้านล่าง'], '-',
-            ['copy-style', 'brush', 'คัดลอกสไตล์'], ['paste-style', 'clipboard', 'วางสไตล์'], '-', ['delete', 'trash', 'ลบ', 'is-danger']
+            ['select', 'Select', 'เลือกแถวนี้'], ['add-column', 'Add column', 'เพิ่มคอลัมน์'], ['edit-row', 'Edit row', 'แก้ไขแถว'], ['duplicate', 'Duplicate', 'ทำสำเนาแถว'], '-',
+            ['row-above', 'Add row above', 'เพิ่มแถวด้านบน'], ['row-below', 'Add row below', 'เพิ่มแถวด้านล่าง'], '-',
+            ['copy-style', 'Copy style', 'คัดลอกสไตล์'], ['paste-style', 'Paste style', 'วางสไตล์'], '-',
+            ['delete', 'Delete', 'ลบแถวนี้']
         ],
         'menu-col': [
-            ['select', 'pointer', 'เลือก'], ['add-into', 'plus', 'เพิ่มเนื้อหา'], ['duplicate', 'copy', 'ทำสำเนาคอลัมน์'], '-',
-            ['col-left', 'arrow-left', 'ย้ายไปซ้าย'], ['col-right', 'arrow-right', 'ย้ายไปขวา'], '-',
-            ['copy-style', 'brush', 'คัดลอกสไตล์'], ['paste-style', 'clipboard', 'วางสไตล์'], '-', ['delete', 'trash', 'ลบคอลัมน์', 'is-danger']
+            ['select', 'Select', 'เลือกคอลัมน์นี้'], ['add-into', 'Add content', 'เพิ่มเนื้อหา'], ['duplicate', 'Duplicate', 'ทำสำเนาคอลัมน์'], '-',
+            ['col-left', 'Move left', 'ย้ายไปซ้าย'], ['col-right', 'Move right', 'ย้ายไปขวา'], '-',
+            ['copy-style', 'Copy style', 'คัดลอกสไตล์'], ['paste-style', 'Paste style', 'วางสไตล์'], '-',
+            ['delete', 'Delete', 'ลบคอลัมน์นี้']
         ]
     };
 
     var menu = make('div', 'id5b-ui id5b-menu');
     document.body.appendChild(menu);
     var menuFor = null;
+    var styleCopied = false;
 
     var drop = make('div', 'id5b-ui id5b-drop');
     var ghost = make('div', 'id5b-ui id5b-ghost');
@@ -343,7 +346,8 @@
         var rowRect = null;
         if (hover.row) {
             r = hover.row.getBoundingClientRect();
-            at(r.left - 5, r.top - 33 >= 2 ? r.top - 33 : r.top + 2, r, rowBar);
+            rowBar.style.display = 'flex';
+            at(r.left + r.width / 2 - rowBar.offsetWidth / 2, r.top - 12, r, rowBar);
             rowRect = rowBar.getBoundingClientRect();
         }
         if (hover.comp) {
@@ -361,6 +365,11 @@
             r = hover.col.getBoundingClientRect();
             colBar.style.display = 'flex';
             at(r.right - colBar.offsetWidth - 1, r.top + 1, r, colBar);
+            // Keep the row's "+ ≡ −" clear: the column's toolbar moves below it.
+            var cb = colBar.getBoundingClientRect();
+            if (rowRect && cb.left < rowRect.right && cb.right > rowRect.left && cb.top < rowRect.bottom && cb.bottom > rowRect.top) {
+                at(r.right - colBar.offsetWidth - 1, rowRect.bottom + 3, r, colBar);
+            }
         }
         if (hover.row) { placeHandles(hover.row); }
     }
@@ -437,9 +446,27 @@
         tell(message);
     }
 
+    var press = null;
+    var pressed = false;
+
+    document.addEventListener('mousemove', function (event) {
+        if (press && !drag && Math.abs(event.clientX - press.x) + Math.abs(event.clientY - press.y) > 6) {
+            var el = press.el;
+            press = null;
+            pressed = true;
+            closeMenu();
+            startDrag(el, event);
+        }
+    }, true);
+    document.addEventListener('mouseup', function () { press = null; }, true);
+
     [secBar, rowBar, colBar, compBar].forEach(function (barEl) {
         barEl.addEventListener('mousedown', function (event) {
             var button = event.target.closest('button');
+            pressed = false;
+            if (button && button.getAttribute('data-do') === 'menu-row') {
+                press = { x: event.clientX, y: event.clientY, el: targetOfBar(barEl) };
+            }
             if (button && button.getAttribute('data-do') === 'drag') {
                 event.preventDefault();
                 var el = targetOfBar(barEl);
@@ -453,7 +480,7 @@
             event.preventDefault();
             event.stopPropagation();
             var name = button.getAttribute('data-do');
-            if (name === 'drag') { return; }
+            if (name === 'drag' || pressed) { pressed = false; return; }
 
             if (barEl === secBar) {
                 var root = hover.root;
@@ -474,7 +501,9 @@
         menuFor = el;
         MENUS[name].forEach(function (item) {
             if (item === '-') { menu.appendChild(make('hr')); return; }
-            var b = make('button', item[3] || '', ti(item[1]) + '<span>' + item[2] + '</span>');
+            var b = make('button', '');
+            b.textContent = item[1];
+            b.title = item[2];
             b.type = 'button';
             b.setAttribute('data-do', item[0]);
             if (name === 'menu-col' && (item[0] === 'col-left' || item[0] === 'col-right')) {
@@ -486,7 +515,7 @@
         });
         var r = button.getBoundingClientRect();
         menu.style.display = 'block';
-        menu.style.left = Math.max(4, Math.min(r.left, window.innerWidth - menu.offsetWidth - 4)) + 'px';
+        menu.style.left = Math.max(4, Math.min(r.left - 8, window.innerWidth - menu.offsetWidth - 4)) + 'px';
         menu.style.top = (r.bottom + menu.offsetHeight + 4 > window.innerHeight ? Math.max(4, r.top - menu.offsetHeight - 4) : r.bottom + 4) + 'px';
         frozen = true;
     }
@@ -504,6 +533,7 @@
         event.stopPropagation();
         var el = menuFor;
         closeMenu();
+        if (button.getAttribute('data-do') === 'copy-style') { styleCopied = true; }
         if (el) { act(button.getAttribute('data-do'), el); }
     });
 
